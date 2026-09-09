@@ -12,7 +12,7 @@
 - **Auth:** Convex Auth
 - **AI models:** none
 - **Started:** 2026-09-09T17:31:07Z
-- **Last updated:** 2026-09-09T23:23:59Z
+- **Last updated:** 2026-09-09T23:28:41Z
 
 ## Log
 
@@ -103,7 +103,7 @@ and rendered its empty state, the session survived a full page reload, and the
 console was free of errors. That exercises the whole chain — provider, token,
 `auth.config.ts`, the JWKS document, and server-side user resolution.
 
-### 2026-09-09 - working tree
+### 2026-09-09 - a694800
 Firecrawl grounding. Before any number is proposed, a room reads the page the
 negotiation is actually about and searches for market comparables, storing each
 with its source URL so proposals can cite them
@@ -124,3 +124,23 @@ dimension meaning a total fee. Grounding is therefore advisory. It is shown to
 both people and given to the model as evidence, but numeric bounds come only
 from what each person entered for themselves. A scraped page may inform a
 decision; it may not make it.
+
+### 2026-09-09 - working tree
+The scoring half of the negotiation engine, with no model involved
+(`convex/engine/scoring.ts`). Given two sets of private limits it finds the
+agreement zone per dimension, scores any proposal for both sides on the same
+normalised scale, names the dimension blocking a deal without revealing either
+side's numbers, and ranks where a side can afford to concede — cheapest first,
+never on a limit marked hard.
+
+The validation guard is the trust boundary: a proposal that breaks the
+proposer's own limits is rejected before it can become an email or an
+agreement. Proposing something better for yourself stays allowed, since asking
+high is negotiating and only going under your own floor is a fault. Eighteen
+tests cover it, then the guard was deliberately disabled and hard limits made
+tradeable to confirm the right two tests fail. They did.
+
+Model access is written against either provider: OpenAI directly, or the Convex
+AI Gateway, chosen at call time by which credential exists (`convex/lib/model.ts`).
+The gateway needs a paid Convex plan, so the deployment is not held hostage to
+one billing decision. No model call has run yet, so no model is claimed.
