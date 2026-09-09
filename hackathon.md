@@ -12,7 +12,7 @@
 - **Auth:** Convex Auth
 - **AI models:** none
 - **Started:** 2026-09-09T17:31:07Z
-- **Last updated:** 2026-09-09T23:18:24Z
+- **Last updated:** 2026-09-09T23:23:59Z
 
 ## Log
 
@@ -89,7 +89,7 @@ last, since exact routes win (`convex/http.ts`, `convex/convex.config.ts`).
 Convex features: schema, tables, indexes, queries, mutations, actions, HTTP
 actions, Convex Auth.
 
-### 2026-09-09 - working tree
+### 2026-09-09 - 3059376
 Wired the auth client. The React app is wrapped in `ConvexAuthProvider` rather
 than the plain provider, which is the difference between tokens being sent and
 silently not being sent (`src/main.tsx`). Added a sign-in and registration form
@@ -102,3 +102,25 @@ assumed: registering established a session, the authenticated room query ran
 and rendered its empty state, the session survived a full page reload, and the
 console was free of errors. That exercises the whole chain — provider, token,
 `auth.config.ts`, the JWKS document, and server-side user resolution.
+
+### 2026-09-09 - working tree
+Firecrawl grounding. Before any number is proposed, a room reads the page the
+negotiation is actually about and searches for market comparables, storing each
+with its source URL so proposals can cite them
+(`convex/lib/firecrawl.ts`, `convex/grounding.ts`).
+
+Running it against a real page exposed two faults worth recording. The
+extraction answered "not stated" with zero rather than null, so a page that
+mentions no timeline yielded a delivery window of zero days — a number the
+engine would have treated as a real anchor meaning "deliver instantly". Values
+that are missing or non-positive are now discarded rather than trusted. Search
+also returned the context page itself as its own comparable, alongside several
+kilobytes of navigation markup per result; results are now deduplicated by
+normalised URL and excerpts are capped.
+
+One limit is deliberate rather than fixed: extracted values carry no unit or
+currency, so a page quoting an hourly rate produces a bare number against a
+dimension meaning a total fee. Grounding is therefore advisory. It is shown to
+both people and given to the model as evidence, but numeric bounds come only
+from what each person entered for themselves. A scraped page may inform a
+decision; it may not make it.
