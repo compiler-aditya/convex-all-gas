@@ -15,3 +15,21 @@ out/
 # Editor / OS
 .DS_Store
 *.log
+
+# Vite / tooling
+dist-ssr/
+*.local
+.vite/
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.sw?
+
+# Convex-managed agent skills — reproducible via `npx convex ai-files install`
+# (skills-lock.json is committed). Our own hackathon skill stays tracked.
+.agents/
+.claude/skills/convex/
+.claude/skills/convex-*/
+!.claude/skills/convex-hackathon-skill/
