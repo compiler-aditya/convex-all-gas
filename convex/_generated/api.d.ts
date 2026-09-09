@@ -8,13 +8,27 @@
  * @module
  */
 
+import type * as agentmail from "../agentmail.js";
+import type * as emailEvents from "../emailEvents.js";
+import type * as http from "../http.js";
+import type * as inboxPool from "../inboxPool.js";
+import type * as lib_mask from "../lib/mask.js";
+import type * as lib_svix from "../lib/svix.js";
+
 import type {
   ApiFromModules,
   FilterApi,
   FunctionReference,
 } from "convex/server";
 
-declare const fullApi: ApiFromModules<{}>;
+declare const fullApi: ApiFromModules<{
+  agentmail: typeof agentmail;
+  emailEvents: typeof emailEvents;
+  http: typeof http;
+  inboxPool: typeof inboxPool;
+  "lib/mask": typeof lib_mask;
+  "lib/svix": typeof lib_svix;
+}>;
 
 /**
  * A utility for referencing Convex functions in your app's public API.
