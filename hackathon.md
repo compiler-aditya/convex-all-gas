@@ -12,7 +12,7 @@
 - **Auth:** Convex Auth
 - **AI models:** none
 - **Started:** 2026-09-09T17:31:07Z
-- **Last updated:** 2026-09-09T23:14:49Z
+- **Last updated:** 2026-09-09T23:18:24Z
 
 ## Log
 
@@ -64,7 +64,7 @@ matched by message id and the recipient's thread id is learned and stored from
 there. Convex features: schema, tables, indexes, queries, mutations, actions,
 HTTP actions.
 
-### 2026-09-09 - working tree
+### 2026-09-09 - 88c385d
 Rooms, private bounds and the authorization model. A room is one negotiation
 between two sides over a set of typed dimensions defined by a template in code,
 so the engine stays domain-agnostic rather than freelance-specific
@@ -88,3 +88,17 @@ appearing healthy. The app now owns the root and registers the static catch-all
 last, since exact routes win (`convex/http.ts`, `convex/convex.config.ts`).
 Convex features: schema, tables, indexes, queries, mutations, actions, HTTP
 actions, Convex Auth.
+
+### 2026-09-09 - working tree
+Wired the auth client. The React app is wrapped in `ConvexAuthProvider` rather
+than the plain provider, which is the difference between tokens being sent and
+silently not being sent (`src/main.tsx`). Added a sign-in and registration form
+that keeps its error messages vague so it cannot be used to discover which
+addresses have accounts, and a dashboard gated on auth state
+(`src/components/SignIn.tsx`, `src/App.tsx`).
+
+Verified in a browser against the deployed development build rather than
+assumed: registering established a session, the authenticated room query ran
+and rendered its empty state, the session survived a full page reload, and the
+console was free of errors. That exercises the whole chain — provider, token,
+`auth.config.ts`, the JWKS document, and server-side user resolution.
