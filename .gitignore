@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Convex — .env.local holds CONVEX_DEPLOYMENT and deploy keys. Never commit.
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Editor / OS
+.DS_Store
+*.log
