@@ -1,20 +1,22 @@
+import { registerStaticRoutes } from "@convex-dev/static-hosting";
 import { httpRouter } from "convex/server";
-import { internal } from "./_generated/api";
+import { components, internal } from "./_generated/api";
+import { auth } from "./auth";
 import { httpAction } from "./_generated/server";
 import { verifySvixSignature } from "./lib/svix";
 
 /**
  * App HTTP routes.
  *
- * `convex/convex.config.ts` sets `httpPrefix: "/api"`, so the static site owns
- * "/" and everything registered here is served under "/api". The AgentMail
- * webhook therefore lives at `/api/webhooks/agentmail` — a URL fixed on day one
- * so it never has to move once AgentMail is pointed at it.
+ * These are registered at their exact paths and take precedence over the static
+ * catch-all added at the bottom of this file. The AgentMail webhook keeps the
+ * `/api/webhooks/agentmail` URL it was registered with on day one, so pointing
+ * AgentMail at it was a one-time act.
  */
 const http = httpRouter();
 
 http.route({
-  path: "/webhooks/agentmail",
+  path: "/api/webhooks/agentmail",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const secret = process.env.AGENTMAIL_WEBHOOK_SECRET;
@@ -94,5 +96,21 @@ http.route({
     return new Response(null, { status: 204 });
   }),
 });
+
+/**
+ * Auth's JWKS and OpenID discovery documents, plus OAuth callbacks.
+ *
+ * Registered before the static catch-all so `/.well-known/*` resolves to real
+ * documents rather than the SPA shell.
+ */
+auth.addHttpRoutes(http);
+
+/**
+ * Serve the built SPA for everything not claimed above.
+ *
+ * Must come last: exact routes win, so auth's `/.well-known/*` documents and the
+ * webhook are matched before this catch-all ever sees the request.
+ */
+registerStaticRoutes(http, components.staticHosting, { spaFallback: true });
 
 export default http;

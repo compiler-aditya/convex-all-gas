@@ -9,11 +9,17 @@
  */
 
 import type * as agentmail from "../agentmail.js";
+import type * as auth from "../auth.js";
+import type * as bounds from "../bounds.js";
 import type * as emailEvents from "../emailEvents.js";
 import type * as http from "../http.js";
 import type * as inboxPool from "../inboxPool.js";
+import type * as lib_access from "../lib/access.js";
 import type * as lib_mask from "../lib/mask.js";
 import type * as lib_svix from "../lib/svix.js";
+import type * as rooms from "../rooms.js";
+import type * as templates_index from "../templates/index.js";
+import type * as templates_types from "../templates/types.js";
 
 import type {
   ApiFromModules,
@@ -23,11 +29,17 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   agentmail: typeof agentmail;
+  auth: typeof auth;
+  bounds: typeof bounds;
   emailEvents: typeof emailEvents;
   http: typeof http;
   inboxPool: typeof inboxPool;
+  "lib/access": typeof lib_access;
   "lib/mask": typeof lib_mask;
   "lib/svix": typeof lib_svix;
+  rooms: typeof rooms;
+  "templates/index": typeof templates_index;
+  "templates/types": typeof templates_types;
 }>;
 
 /**

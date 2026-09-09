@@ -8,11 +8,11 @@
 - **Frontend:** Convex static hosting
 - **Convex deployment:** not deployed
 - **Components:** @convex-dev/static-hosting
-- **Convex features:** schema, tables, indexes, queries, mutations, actions, HTTP actions
-- **Auth:** none
+- **Convex features:** schema, tables, indexes, queries, mutations, actions, HTTP actions, Convex Auth
+- **Auth:** Convex Auth
 - **AI models:** none
 - **Started:** 2026-09-09T17:31:07Z
-- **Last updated:** 2026-09-09T23:03:54Z
+- **Last updated:** 2026-09-09T23:14:49Z
 
 ## Log
 
@@ -42,7 +42,7 @@ hashed assets return correct content types, unknown client-side routes fall back
 `index.html`, and a missing asset still returns 404. Production is not deployed and
 no auth is wired yet. Convex features: schema, tables, indexes.
 
-### 2026-09-09 - working tree
+### 2026-09-09 - 6f6be66
 Proved the inbound email path before building anything on top of it. A signed
 AgentMail webhook now lands at `/api/webhooks/agentmail`, with Svix signature
 verification written directly against Web Crypto so it runs on Convex's default
@@ -63,3 +63,28 @@ message id does survive delivery unchanged, so the first inbound event is
 matched by message id and the recipient's thread id is learned and stored from
 there. Convex features: schema, tables, indexes, queries, mutations, actions,
 HTTP actions.
+
+### 2026-09-09 - working tree
+Rooms, private bounds and the authorization model. A room is one negotiation
+between two sides over a set of typed dimensions defined by a template in code,
+so the engine stays domain-agnostic rather than freelance-specific
+(`convex/templates/`). The creator signs in with Convex Auth; the counterparty
+joins through a link carrying a 32-byte token, stored only as a hash, and never
+creates an account (`convex/rooms.ts`, `convex/lib/access.ts`).
+
+Callers are resolved to a participant server-side from session or token — a
+participant id is never accepted as an argument, since that alone would let
+anyone read the other side's private bounds (`convex/bounds.ts`). Ten tests
+cover the invariant, including a forged token, an authenticated stranger, and a
+stranger attempting a write. The isolation tests were then verified by
+deliberately breaking the scoping to confirm they fail when the invariant
+fails; two caught it, and the weaker of the two was rewritten after the first
+attempt caught nothing.
+
+Auth's discovery documents forced a routing change. The static host originally
+owned `/`, which meant `/.well-known/openid-configuration` was answered by the
+SPA fallback with HTML and a 200, so token verification would have failed while
+appearing healthy. The app now owns the root and registers the static catch-all
+last, since exact routes win (`convex/http.ts`, `convex/convex.config.ts`).
+Convex features: schema, tables, indexes, queries, mutations, actions, HTTP
+actions, Convex Auth.
