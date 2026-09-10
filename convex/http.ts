@@ -87,11 +87,39 @@ http.route({
       return new Response(null, { status: 204 });
     }
 
-    // Spike scope: prove the signed round trip and land the event. Thread
-    // routing to a room, body hydration, and the reply come in the email phase.
+    // Route the delivery back to its room. Message-Id matches on the opening
+    // message; thread id takes over once the recipient's thread is known.
+    const route = await ctx.runQuery(internal.email.routeInbound, {
+      messageId,
+      threadId,
+    });
+
+    if (route === null) {
+      // Mail to a pool inbox that is not part of any negotiation. Acknowledge
+      // it so the provider stops retrying, but do nothing with it.
+      console.log(`[webhook] unrouted delivery event=${eventId}`);
+      return new Response(null, { status: 204 });
+    }
+
+    if (threadId !== undefined) {
+      await ctx.runMutation(internal.email.rememberThread, {
+        threadId,
+        roomId: route.roomId,
+        side: route.recipientSide,
+      });
+    }
+
     console.log(
-      `[webhook] accepted event=${eventId} inbox=${inboxId ?? "?"} thread=${threadId ?? "?"} message=${messageId ?? "?"}`,
+      `[webhook] routed event=${eventId} room=${route.roomId} to=${route.recipientSide} via ${route.matchedBy}`,
     );
+
+    // Delivery is what advances the negotiation: the recipient's agent now
+    // takes its turn. Scheduled so the webhook returns promptly — providers
+    // retry on a slow handler, which would duplicate work.
+    await ctx.scheduler.runAfter(0, internal.negotiation.runRound, {
+      roomId: route.roomId,
+      deliver: true,
+    });
 
     return new Response(null, { status: 204 });
   }),

@@ -199,9 +199,16 @@ export type RoundOutcome =
   | { kind: "no_deal"; dimension: string }
   | { kind: "halted"; reason: string };
 
-/** Run exactly one round. Returns what happened so the caller can decide to continue. */
+/**
+ * Run exactly one round.
+ *
+ * `deliver` chooses which loop drives the negotiation. Offline, the caller
+ * loops and no email is sent. With delivery, this schedules the round as an
+ * email and the inbound webhook triggers the next round — so exactly one thing
+ * advances the negotiation and the two modes never both run.
+ */
 export const runRound = internalAction({
-  args: { roomId: v.id("rooms") },
+  args: { roomId: v.id("rooms"), deliver: v.optional(v.boolean()) },
   returns: v.any(),
   handler: async (ctx, args): Promise<RoundOutcome> => {
     const context = await ctx.runQuery(internal.negotiation.roundContext, {
@@ -309,6 +316,15 @@ export const runRound = internalAction({
       utilityForProposer: utility,
     });
 
+    if (args.deliver === true) {
+      // Scheduled rather than awaited: the round is committed either way, so a
+      // provider outage delays delivery instead of losing the offer.
+      await ctx.scheduler.runAfter(0, internal.email.sendRoundEmail, {
+        roomId: args.roomId,
+        roundIndex: index,
+      });
+    }
+
     return { kind: "proposed", index, side };
   },
 });
@@ -324,6 +340,7 @@ export const runNegotiation = internalAction({
     for (let step = 0; step < limit; step++) {
       last = await ctx.runAction(internal.negotiation.runRound, {
         roomId: args.roomId,
+        deliver: false,
       });
       if (last.kind !== "proposed") {
         return { steps: step + 1, outcome: last };

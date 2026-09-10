@@ -11,6 +11,7 @@
 import type * as agentmail from "../agentmail.js";
 import type * as auth from "../auth.js";
 import type * as bounds from "../bounds.js";
+import type * as email from "../email.js";
 import type * as emailEvents from "../emailEvents.js";
 import type * as engine_propose from "../engine/propose.js";
 import type * as engine_scoring from "../engine/scoring.js";
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   agentmail: typeof agentmail;
   auth: typeof auth;
   bounds: typeof bounds;
+  email: typeof email;
   emailEvents: typeof emailEvents;
   "engine/propose": typeof engine_propose;
   "engine/scoring": typeof engine_scoring;

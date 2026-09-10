@@ -2,7 +2,7 @@
 
 - **Project:** convex-all-gas
 - **Event:** Convex All Gas Hackathon
-- **What it does:** Not documented yet
+- **What it does:** Two agents with their own inboxes negotiate by email on behalf of two people, each holding one side's private limits, so a deal is found without either side revealing their number.
 - **Live app:** not deployed
 - **Repo:** private
 - **Frontend:** Convex static hosting
@@ -12,7 +12,7 @@
 - **Auth:** Convex Auth
 - **AI models:** gemini-3.5-flash (development; provider is switchable by env var)
 - **Started:** 2026-09-09T17:31:07Z
-- **Last updated:** 2026-09-10T00:03:20Z
+- **Last updated:** 2026-09-10T00:11:52Z
 
 ## Log
 
@@ -176,3 +176,28 @@ reasoning before emitting output, so a modest limit returns a truncated
 fragment rather than an error; reasoning effort is now set explicitly for
 structured replies. Convex features: schema, tables, indexes, queries,
 mutations, actions, HTTP actions, Convex Auth.
+
+### 2026-09-10 - working tree
+The negotiation now runs over real email, agent to agent
+(`convex/email.ts`, `convex/http.ts`). Each side is assigned an inbox from the
+shared pool, a completed round is rendered as a message and sent, and the
+inbound webhook advances the negotiation to the other side's turn. Delivery is
+what drives the loop, so exactly one mechanism moves a negotiation forward and
+the offline loop and the email loop can never both run.
+
+A full negotiation completed this way: three messages between two agent
+inboxes, ending in agreement on terms inside both sides' limits. The chain was
+advanced only by webhooks, which fire on genuine delivery, so the round trip is
+real rather than simulated.
+
+The routing fix the earlier spike called for is in place. Sends record their
+Message-Id against the room, the first inbound event matches on it, and the
+recipient's thread identifier is learned and stored from there — after which
+routing works by thread as originally intended. Both directions were observed
+being learned during the run.
+
+One provider constraint cost a send: the idempotency header rejects characters
+outside a narrow set, and a colon in the key returned a validation error rather
+than sending. Transport is switchable, with a mock that records what would have
+been sent so tests do not consume a limited daily send quota; live remains the
+default so a demonstration cannot quietly run on the mock.

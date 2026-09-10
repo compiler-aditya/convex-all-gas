@@ -139,6 +139,26 @@ export default defineSchema({
     .index("by_thread", ["threadId"])
     .index("by_room", ["roomId"]),
 
+  /**
+   * Message-Id -> room, recorded on send.
+   *
+   * Thread ids are per-inbox: the sender's thread is not the thread the webhook
+   * delivers, so thread-only routing fails on the opening message of every
+   * negotiation — the recipient's thread id has never been seen before. The
+   * Message-Id header does survive delivery unchanged, so the first inbound
+   * event is matched here, and the recipient's thread id is learned and stored
+   * from that point on.
+   */
+  messageRoutes: defineTable({
+    messageId: v.string(),
+    roomId: v.id("rooms"),
+    /** The side that sent it; the webhook therefore belongs to the other. */
+    sentBySide: side,
+    roundIndex: v.number(),
+  })
+    .index("by_message", ["messageId"])
+    .index("by_room", ["roomId"]),
+
   /** Webhook idempotency + audit trail. Deliveries are at-least-once. */
   emailEvents: defineTable({
     eventId: v.string(),
