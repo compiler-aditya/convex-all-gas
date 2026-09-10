@@ -12,7 +12,7 @@
 - **Auth:** Convex Auth
 - **AI models:** gemini-3.5-flash (development; provider is switchable by env var)
 - **Started:** 2026-09-09T17:31:07Z
-- **Last updated:** 2026-09-10T05:56:01Z
+- **Last updated:** 2026-09-10T06:04:15Z
 
 ## Log
 
@@ -253,3 +253,26 @@ public comparison and say plainly that nothing private backs it. The
 counterparty's name was hardcoded in five places. And the application entry
 point had been replaced by a fixtures-only harness, so the product booted into
 mock data.
+
+### 2026-09-10 - working tree
+A negotiation can now be started from the interface rather than the command
+line (`src/routes/CreateRoomRoute.tsx`, `src/routes/BoundsRoute.tsx`). Creating
+a room asks what the negotiation is about and which side you are; limits are a
+separate screen, because that screen has to earn a number the user has refused
+to say aloud. It states the promise once, plainly, and marks the whole form as
+private rather than repeating a warning per field.
+
+Which limit a term takes is derived, never hardcoded. The same form asks the
+freelancer for a minimum and the client for a maximum, from the template's
+own description of who a higher value favours.
+
+Walked end to end in a browser across two sessions. The creator signs in,
+creates a room, locks in a position, and gets a link. The counterparty opens
+that link with no account, sets their own limits, and both sides then see that
+both positions are in. A term left blank is treated as no opinion rather than
+as zero.
+
+One behaviour worth recording: opening your own invite link while signed in
+shows your own view, because the caller is resolved from the session before the
+link token is considered. That is correct, and it means a demonstration needs
+two separate browser sessions rather than two tabs.

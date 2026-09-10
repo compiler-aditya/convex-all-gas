@@ -46,6 +46,12 @@ export function RoomRoute() {
         </p>
         <h1 className="mt-2 text-xl font-semibold">Set your position</h1>
         <p className="text-muted-foreground mt-2 text-sm">{live.reason}</p>
+        <a
+          href={`/room/${roomId}/position${joinToken !== undefined ? `?t=${joinToken}` : ''}`}
+          className="mt-4 inline-block rounded-md bg-foreground px-3 py-1.5 text-sm font-medium text-background"
+        >
+          Set your limits
+        </a>
       </Shell>
     )
   }

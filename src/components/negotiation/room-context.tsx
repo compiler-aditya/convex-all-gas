@@ -33,10 +33,13 @@ export type RoomData = Readonly<{
   displayScales: Readonly<Record<string, DisplayScale>>
   scenario: PublicScenario
   briefing: AgentBriefingCopy
+  /** True when both sides have a position and no offer has been made yet. */
+  canStart?: boolean
   /** Absent in the preview, where there is nothing to send. */
   actions?: Readonly<{
     submitGuidance: (text: string) => Promise<void>
     confirmAgreement: () => Promise<void>
+    startNegotiation: () => Promise<{ started: boolean; reason?: string }>
   }>
 }>
 

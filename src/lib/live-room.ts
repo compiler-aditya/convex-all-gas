@@ -122,6 +122,7 @@ export function useLiveRoom(
 
   const submitGuidance = useMutation(api.rounds.addIntervention)
   const confirm = useMutation(api.rounds.confirmAgreement)
+  const start = useMutation(api.rounds.startNegotiation)
 
   if (roomId === null) return { state: 'denied' }
   if (
@@ -241,7 +242,12 @@ export function useLiveRoom(
       openTerms,
       binding: agreement?.binding ?? false,
     }),
+    canStart:
+      offers.length === 0 &&
+      room.counterpartyBoundsSubmitted &&
+      room.myBoundsSubmitted,
     actions: {
+      startNegotiation: async () => await start({ roomId, joinToken }),
       submitGuidance: async (text: string) => {
         await submitGuidance({ roomId, joinToken, text })
       },

@@ -18,7 +18,9 @@ type Appearance = 'system' | 'light' | 'dark'
  * nothing, which is what keeps demo controls out of the product.
  */
 export function NegotiationRoom({ demoFooter }: { demoFooter?: ReactNode } = {}) {
-  const { room, scenario, briefing, template, mySide } = useRoom()
+  const { room, scenario, briefing, template, mySide, canStart, actions } = useRoom()
+  const [starting, setStarting] = useState(false)
+  const [startError, setStartError] = useState<string | null>(null)
   const [session, dispatch] = useReducer(roomReducer, undefined, () => createRoomSession())
   const [appearance, setAppearance] = useState<Appearance>('system')
 
@@ -82,6 +84,36 @@ export function NegotiationRoom({ demoFooter }: { demoFooter?: ReactNode } = {})
               agreementOpen={session.sheet === 'agreement'}
               onAgreementOpenChange={(open) => dispatch({ type: 'sheet', value: open ? 'agreement' : null })}
             />
+            {canStart === true && actions !== undefined && (
+              <div className="mt-4 grid gap-2">
+                <button
+                  type="button"
+                  disabled={starting}
+                  onClick={() => {
+                    setStarting(true)
+                    setStartError(null)
+                    void actions
+                      .startNegotiation()
+                      .then((result) => {
+                        if (!result.started) setStartError(result.reason ?? 'Could not start.')
+                      })
+                      .catch((cause: unknown) => {
+                        setStartError(cause instanceof Error ? cause.message : 'Could not start.')
+                      })
+                      .finally(() => setStarting(false))
+                  }}
+                  className="justify-self-start rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
+                >
+                  {starting ? 'Starting…' : 'Start the negotiation'}
+                </button>
+                <p className="text-xs text-muted-foreground">
+                  Your agent makes the opening offer. You can step in at any point.
+                </p>
+                {startError !== null && (
+                  <p role="alert" className="text-xs text-no-deal">{startError}</p>
+                )}
+              </div>
+            )}
             <GapPanel
               scenario={scenario}
               expandedTerms={session.expandedTerms}

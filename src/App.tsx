@@ -1,5 +1,6 @@
 import { useAuthActions } from '@convex-dev/auth/react'
 import { Authenticated, AuthLoading, Unauthenticated, useQuery } from 'convex/react'
+import { Link } from 'react-router-dom'
 import { api } from '../convex/_generated/api'
 import { SignIn } from './components/SignIn'
 
@@ -24,13 +25,21 @@ function Dashboard() {
             Your negotiations
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => void signOut()}
-          className="text-sm text-neutral-600 underline underline-offset-4 dark:text-neutral-400"
-        >
-          Sign out
-        </button>
+        <div className="flex items-center gap-4">
+          <Link
+            to="/rooms/new"
+            className="rounded-md bg-foreground px-3 py-1.5 text-sm font-medium text-background"
+          >
+            New negotiation
+          </Link>
+          <button
+            type="button"
+            onClick={() => void signOut()}
+            className="text-sm text-muted-foreground underline underline-offset-4"
+          >
+            Sign out
+          </button>
+        </div>
       </header>
 
       <section className="mt-8">
@@ -41,24 +50,30 @@ function Dashboard() {
             <p className="text-neutral-700 dark:text-neutral-300">
               No negotiations yet.
             </p>
-            <p className="mt-1 text-sm text-neutral-500">
+            <p className="mt-1 text-sm text-muted-foreground">
               Create one, set your private limits, and send the link to the
               person you are already dealing with.
             </p>
+            <Link
+              to="/rooms/new"
+              className="mt-4 inline-block rounded-md bg-foreground px-3 py-1.5 text-sm font-medium text-background"
+            >
+              New negotiation
+            </Link>
           </div>
         ) : (
           <ul className="divide-y divide-neutral-200 dark:divide-neutral-800">
             {rooms.map((room) => (
-              <li
-                key={room.roomId}
-                className="flex items-center justify-between py-3"
-              >
-                <span className="text-neutral-900 dark:text-neutral-100">
-                  {room.title}
-                </span>
-                <span className="font-mono text-xs text-neutral-500">
-                  {room.status}
-                </span>
+              <li key={room.roomId}>
+                <Link
+                  to={`/room/${room.roomId}`}
+                  className="flex items-center justify-between py-3 text-foreground"
+                >
+                  <span>{room.title}</span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {room.status.replace(/_/g, ' ')}
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>

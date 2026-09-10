@@ -4,6 +4,8 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import App from './App.tsx'
+import { BoundsRoute } from './routes/BoundsRoute'
+import { CreateRoomRoute } from './routes/CreateRoomRoute'
 import { RoomRoute } from './routes/RoomRoute'
 import './index.css'
 
@@ -24,6 +26,8 @@ createRoot(document.getElementById('root')!).render(
         <Routes>
           {/* The room is reachable without an account: the counterparty is
               authenticated by the token on the link, not by a session. */}
+          <Route path="/rooms/new" element={<CreateRoomRoute />} />
+          <Route path="/room/:roomId/position" element={<BoundsRoute />} />
           <Route path="/room/:roomId" element={<RoomRoute />} />
           <Route path="*" element={<App />} />
         </Routes>
