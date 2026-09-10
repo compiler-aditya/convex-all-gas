@@ -1,6 +1,7 @@
-import { useEffect, useReducer, useState } from 'react'
+import { useReducer } from 'react'
 import { ArrowRightLeft, Blend, FlaskConical } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
+import { useAppearance, type Appearance } from '@/hooks/use-appearance'
 import { AgentBriefing } from './agent-briefing'
 import { GapPanel } from './gap-panel'
 import { OfferRecord } from './offer-record'
@@ -8,23 +9,10 @@ import { PrivatePositionPanel } from './private-position'
 import { briefings, previewStates, room, scenarios } from './fixtures'
 import { createRoomSession, roomReducer, type PreviewState } from './model'
 
-type Appearance = 'system' | 'light' | 'dark'
-
 export function NegotiationRoom() {
   const [session, dispatch] = useReducer(roomReducer, undefined, () => createRoomSession())
-  const [appearance, setAppearance] = useState<Appearance>('system')
+  const { appearance, setAppearance } = useAppearance()
   const scenario = scenarios[session.scenario]
-
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-color-scheme: dark)')
-    const applyTheme = () => {
-      document.documentElement.dataset.theme = appearance === 'system' ? (media.matches ? 'dark' : 'light') : appearance
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', getComputedStyle(document.documentElement).backgroundColor)
-    }
-    applyTheme()
-    media.addEventListener('change', applyTheme)
-    return () => media.removeEventListener('change', applyTheme)
-  }, [appearance])
 
   return (
     <div className="room-page font-sans">
@@ -32,7 +20,7 @@ export function NegotiationRoom() {
       <header className="site-header">
         <div className="site-header-inner">
           <div className="brand-cluster">
-            <a className="wordmark" href="#room-content" aria-label="Overlap negotiation room">
+            <a className="wordmark" href="/" aria-label="Overlap home">
               <Blend className="brand-symbol" aria-hidden="true" strokeWidth={1.8} />
               overlap
             </a>
