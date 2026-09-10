@@ -101,6 +101,8 @@ export const getRoom = query({
     counterpartyName: v.optional(v.string()),
     counterpartyJoined: v.boolean(),
     counterpartyBoundsSubmitted: v.boolean(),
+    /** Set only on no_deal. The dimension label, never a number. */
+    noDealDimension: v.optional(v.string()),
   }),
   handler: async (ctx, args) => {
     const { room, participant } = await requireParticipant(ctx, args);
@@ -125,6 +127,7 @@ export const getRoom = query({
       counterpartyJoined: other?.joinedAt !== undefined,
       // Whether they are ready — not what they said.
       counterpartyBoundsSubmitted: other?.boundsSubmittedAt !== undefined,
+      noDealDimension: room.noDealDimension,
     };
   },
 });

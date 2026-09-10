@@ -26,6 +26,7 @@ import type * as lib_model from "../lib/model.js";
 import type * as lib_svix from "../lib/svix.js";
 import type * as negotiation from "../negotiation.js";
 import type * as rooms from "../rooms.js";
+import type * as rounds from "../rounds.js";
 import type * as seed from "../seed.js";
 import type * as templates_index from "../templates/index.js";
 import type * as templates_types from "../templates/types.js";
@@ -55,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   "lib/svix": typeof lib_svix;
   negotiation: typeof negotiation;
   rooms: typeof rooms;
+  rounds: typeof rounds;
   seed: typeof seed;
   "templates/index": typeof templates_index;
   "templates/types": typeof templates_types;

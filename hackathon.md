@@ -12,7 +12,7 @@
 - **Auth:** Convex Auth
 - **AI models:** gemini-3.5-flash (development; provider is switchable by env var)
 - **Started:** 2026-09-09T17:31:07Z
-- **Last updated:** 2026-09-10T00:11:52Z
+- **Last updated:** 2026-09-10T02:34:06Z
 
 ## Log
 
@@ -201,3 +201,27 @@ outside a narrow set, and a colon in the key returned a validation error rather
 than sending. Transport is switchable, with a mock that records what would have
 been sent so tests do not consume a limited daily send quota; live remains the
 default so a demonstration cannot quietly run on the mock.
+
+### 2026-09-10 - working tree
+Wrote the interface specification and completed the public API it binds to.
+
+The brief treats the information asymmetry as the architecture rather than a
+feature to explain: the negotiation room is three columns that each answer one
+question — what is mine and secret, what is shared and on the record, how far
+apart we still are. It specifies a per-dimension track that draws the viewer's
+own limit and both sides' offers while never drawing the counterparty's limit or
+any value it could be inferred from, and carries a prohibitions section because
+the default output of a generative interface tool is decoration this product
+cannot afford.
+
+The public surface is now complete (`convex/rounds.ts`). Offers, citations and
+settled terms are shared, since both sides negotiated them. Instructions to your
+own agent are not: telling an agent what you would accept discloses your
+position as directly as a limit does, so those are scoped to the caller exactly
+as limits are. Five more tests cover it, and the privacy test was verified by
+removing the scoping filter to confirm it fails when the guarantee fails.
+
+Confirming an agreement sets only the caller's own flag, and nothing is binding
+until both are set. Starting a negotiation refuses politely when a side has not
+set a position rather than throwing, so the interface can render the reason
+instead of an error.

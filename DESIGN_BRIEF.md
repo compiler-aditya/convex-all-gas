@@ -436,20 +436,62 @@ useMutation(api.bounds.setMyBounds)
 Note what is absent: any field carrying the counterparty's bounds. That is
 deliberate and permanent.
 
-**Being added (assume these shapes):**
+**Also live — bind to these exact shapes:**
 
 ```ts
-useQuery(api.rounds.roomRounds, { roomId, joinToken? })
-// [{ index, bySide, proposal: Record<string, number>, rationale,
-//    citations: [{ url, title }], createdAt }]
+useQuery(api.rounds.roomRounds,       { roomId, joinToken? })
+useQuery(api.rounds.roomAgreement,    { roomId, joinToken? })
+useQuery(api.rounds.myInterventions,  { roomId, joinToken? })
 
-useQuery(api.rounds.roomAgreement, { roomId, joinToken? })
-// null | { terms, citations, confirmedBySideA, confirmedBySideB, settledAt }
-
-useMutation(api.rounds.startNegotiation)   // { roomId }
-useMutation(api.rounds.addIntervention)    // { roomId, joinToken?, text }
-useMutation(api.rounds.confirmAgreement)   // { roomId, joinToken? }
+useMutation(api.rounds.startNegotiation)  // { roomId, joinToken? }
+useMutation(api.rounds.addIntervention)   // { roomId, joinToken?, text }
+useMutation(api.rounds.confirmAgreement)  // { roomId, joinToken? }
 ```
+
+```ts
+// roomRounds -> the shared record, oldest first
+[{
+  index: number,
+  bySide: "a" | "b",
+  proposal: Record<string, number>,
+  rationale: string,
+  citations: { url: string, title?: string }[],
+  createdAt: number,
+  delivered: boolean,        // whether this offer actually went out as mail
+}]
+
+// roomAgreement -> null until the agents converge
+null | {
+  terms: Record<string, number>,
+  citations: { url: string, title?: string }[],
+  confirmedBySideA: boolean,
+  confirmedBySideB: boolean,
+  settledAt?: number,
+  binding: boolean,          // true ONLY when both confirmed — gate the UI on this
+}
+
+// myInterventions -> the caller's own instructions. Private, like bounds.
+[{ text: string, appliedAtRound: number, createdAt: number }]
+
+// startNegotiation -> refuses politely rather than throwing
+{ started: boolean, reason?: string }   // reason e.g. "both sides must set their position first"
+
+// confirmAgreement
+{ confirmedBySideA: boolean, confirmedBySideB: boolean, binding: boolean }
+```
+
+`getRoom` also returns **`noDealDimension?: string`** — the blocking dimension's
+label, set only when `status === "no_deal"`. It is a label, never a number. Use
+it verbatim in the no-deal copy.
+
+`myInterventions` is private for the same reason bounds are: telling your agent
+"I'll go to 60% upfront if she starts Monday" discloses your position as
+directly as a limit does. Render interventions in the **left column**, never in
+the shared record.
+
+`startNegotiation` returns `{ started: false, reason }` rather than throwing when
+the room is not ready. Show the reason as inline text; do not surface it as an
+error dialog.
 
 **`joinToken`** — the counterparty has no account. They arrive at
 `/room/:roomId?t=<token>` and every query and mutation they make must pass that

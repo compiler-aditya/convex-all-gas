@@ -202,3 +202,119 @@ describe("bounds validation", () => {
     expect(mine[0].min).toBe(120000);
   });
 });
+
+describe("the public surface the interface binds to", () => {
+  test("both sides read the same shared record of offers", async () => {
+    const { t, creator, roomId, joinToken } = await setupRoom();
+    await t.mutation(api.rooms.joinRoom, { roomId, joinToken });
+
+    await t.run(async (ctx) => {
+      await ctx.db.insert("rounds", {
+        roomId,
+        index: 0,
+        bySide: "a",
+        proposal: { rate: 135000 },
+        rationale: "Opening offer.",
+        citedGroundingIds: [],
+        utilityForProposer: 0.8,
+      });
+    });
+
+    // Offers are deliberately shared — both negotiated them, both may read them.
+    const mine = await creator.query(api.rounds.roomRounds, { roomId });
+    const theirs = await t.query(api.rounds.roomRounds, { roomId, joinToken });
+    expect(mine).toHaveLength(1);
+    expect(theirs).toHaveLength(1);
+    expect(theirs[0].proposal.rate).toBe(135000);
+  });
+
+  test("instructions to your agent are private to you", async () => {
+    const { t, creator, roomId, joinToken } = await setupRoom();
+    await t.mutation(api.rooms.joinRoom, { roomId, joinToken });
+
+    await creator.mutation(api.rounds.addIntervention, {
+      roomId,
+      text: "I will go to 60% upfront if they start Monday",
+    });
+    await t.mutation(api.rounds.addIntervention, {
+      roomId,
+      joinToken,
+      text: "Do not go above four screens",
+    });
+
+    const mine = await creator.query(api.rounds.myInterventions, { roomId });
+    const theirs = await t.query(api.rounds.myInterventions, {
+      roomId,
+      joinToken,
+    });
+
+    expect(mine).toHaveLength(1);
+    expect(mine[0].text).toContain("60% upfront");
+    expect(theirs).toHaveLength(1);
+    expect(theirs[0].text).toContain("four screens");
+
+    // Neither side may see the other's instruction — it discloses position
+    // just as directly as a bound does.
+    expect(JSON.stringify(mine)).not.toContain("four screens");
+    expect(JSON.stringify(theirs)).not.toContain("60% upfront");
+  });
+
+  test("a stranger cannot instruct an agent or confirm a deal", async () => {
+    const { t, roomId } = await setupRoom();
+    const strangerId = await t.run(async (ctx) =>
+      ctx.db.insert("users", { name: "Stranger" }),
+    );
+    const stranger = asUser(t, strangerId);
+
+    await expect(
+      stranger.mutation(api.rounds.addIntervention, { roomId, text: "drop it" }),
+    ).rejects.toThrow(/not a participant/i);
+    await expect(
+      stranger.mutation(api.rounds.confirmAgreement, { roomId }),
+    ).rejects.toThrow(/not a participant/i);
+    await expect(
+      stranger.query(api.rounds.myInterventions, { roomId }),
+    ).rejects.toThrow(/not a participant/i);
+  });
+
+  test("confirming binds only when both sides have", async () => {
+    const { t, creator, roomId, joinToken } = await setupRoom();
+    await t.mutation(api.rooms.joinRoom, { roomId, joinToken });
+    await t.run(async (ctx) => {
+      await ctx.db.insert("agreements", {
+        roomId,
+        terms: { rate: 125000 },
+        citedGroundingIds: [],
+        confirmedBySideA: false,
+        confirmedBySideB: false,
+      });
+    });
+
+    const first = await creator.mutation(api.rounds.confirmAgreement, { roomId });
+    expect(first.confirmedBySideA).toBe(true);
+    // One signature is not a deal.
+    expect(first.binding).toBe(false);
+
+    const second = await t.mutation(api.rounds.confirmAgreement, {
+      roomId,
+      joinToken,
+    });
+    expect(second.binding).toBe(true);
+
+    const view = await creator.query(api.rounds.roomAgreement, { roomId });
+    expect(view?.binding).toBe(true);
+    expect(view?.settledAt).toBeTypeOf("number");
+  });
+
+  test("a negotiation cannot start before both sides set a position", async () => {
+    const { creator, roomId, joinToken } = await setupRoom();
+    void joinToken;
+    await creator.mutation(api.bounds.setMyBounds, {
+      roomId,
+      bounds: FREELANCER_BOUNDS,
+    });
+    const result = await creator.mutation(api.rounds.startNegotiation, { roomId });
+    expect(result.started).toBe(false);
+    expect(result.reason).toMatch(/position|joined/i);
+  });
+});
