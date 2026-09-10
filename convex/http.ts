@@ -74,8 +74,6 @@ http.route({
       typeof message.message_id === "string" ? message.message_id : undefined;
     const threadId =
       typeof message.thread_id === "string" ? message.thread_id : undefined;
-    const inboxId =
-      typeof message.inbox_id === "string" ? message.inbox_id : undefined;
 
     const { isDuplicate } = await ctx.runMutation(
       internal.emailEvents.recordInbound,
