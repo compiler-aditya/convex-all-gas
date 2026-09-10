@@ -10,9 +10,9 @@
 - **Components:** @convex-dev/static-hosting
 - **Convex features:** schema, tables, indexes, queries, mutations, actions, HTTP actions, Convex Auth
 - **Auth:** Convex Auth
-- **AI models:** none
+- **AI models:** gemini-3.5-flash (development; provider is switchable by env var)
 - **Started:** 2026-09-09T17:31:07Z
-- **Last updated:** 2026-09-09T23:28:41Z
+- **Last updated:** 2026-09-10T00:03:20Z
 
 ## Log
 
@@ -125,7 +125,7 @@ both people and given to the model as evidence, but numeric bounds come only
 from what each person entered for themselves. A scraped page may inform a
 decision; it may not make it.
 
-### 2026-09-09 - working tree
+### 2026-09-09 - 2eb3191
 The scoring half of the negotiation engine, with no model involved
 (`convex/engine/scoring.ts`). Given two sets of private limits it finds the
 agreement zone per dimension, scores any proposal for both sides on the same
@@ -144,3 +144,35 @@ Model access is written against either provider: OpenAI directly, or the Convex
 AI Gateway, chosen at call time by which credential exists (`convex/lib/model.ts`).
 The gateway needs a paid Convex plan, so the deployment is not held hostage to
 one billing decision. No model call has run yet, so no model is claimed.
+
+### 2026-09-10 - working tree
+The negotiation engine runs end to end, with no email involved
+(`convex/engine/propose.ts`, `convex/negotiation.ts`). Sides alternate. Each
+round the server first decides, from the bounds alone, whether the standing
+offer is already acceptable, and only asks the model for a counter when it is
+not — acceptance is never left to the model, which is both safer and steadier
+to demonstrate. Generated proposals are validated against the proposer's own
+limits, repaired once with feedback if they break them, and clamped as a last
+resort, so no offer that violates its own side's floor can ever be recorded.
+
+A real run settled a deal at a fee inside the zone that neither side disclosed,
+with every agreed term inside both sides' limits. The opposite case concludes in
+one step without spending a model call: when the ranges cannot meet, the room
+closes naming the blocking dimension and nothing else, verified to contain none
+of either side's numbers.
+
+Two faults surfaced only by running it. The leak guard matched limit values as
+substrings, so a scope limit of 4 matched any sentence containing that digit and
+suppressed two of three messages; it now ignores values a side actually
+proposed, since stating your own offer is not a disclosure, and skips values too
+small to distinguish from ordinary counts. Separately, the concession ranking
+was written and tested but never wired into the prompt, so one side conceded on
+every axis at once. With it wired, that side now trades explicitly — giving
+scope and deposit to hold the fee.
+
+Model access retries transient provider errors with backoff, after a capacity
+spike failed a round outright. Thinking models also spend the token budget on
+reasoning before emitting output, so a modest limit returns a truncated
+fragment rather than an error; reasoning effort is now set explicitly for
+structured replies. Convex features: schema, tables, indexes, queries,
+mutations, actions, HTTP actions, Convex Auth.

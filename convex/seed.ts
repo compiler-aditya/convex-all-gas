@@ -56,3 +56,79 @@ export const createTestRoom = internalMutation({
     return { roomId, creatorUserId };
   },
 });
+
+/** Set one side's bounds directly, bypassing auth. Development only. */
+export const seedBounds = internalMutation({
+  args: {
+    roomId: v.id("rooms"),
+    side: v.union(v.literal("a"), v.literal("b")),
+    bounds: v.array(
+      v.object({
+        dimensionKey: v.string(),
+        min: v.optional(v.number()),
+        max: v.optional(v.number()),
+        weight: v.number(),
+        isHard: v.boolean(),
+      }),
+    ),
+  },
+  returns: v.object({ written: v.number() }),
+  handler: async (ctx, args) => {
+    const participant = await ctx.db
+      .query("participants")
+      .withIndex("by_room_side", (q) =>
+        q.eq("roomId", args.roomId).eq("side", args.side),
+      )
+      .unique();
+    if (participant === null) throw new Error(`No participant on side ${args.side}`);
+
+    const existing = await ctx.db
+      .query("bounds")
+      .withIndex("by_participant", (q) => q.eq("participantId", participant._id))
+      .take(100);
+    for (const row of existing) await ctx.db.delete("bounds", row._id);
+
+    for (const bound of args.bounds) {
+      await ctx.db.insert("bounds", {
+        roomId: args.roomId,
+        participantId: participant._id,
+        dimensionKey: bound.dimensionKey,
+        min: bound.min,
+        max: bound.max,
+        weight: bound.weight,
+        isHard: bound.isHard,
+      });
+    }
+    await ctx.db.patch("participants", participant._id, {
+      boundsSubmittedAt: Date.now(),
+    });
+    return { written: args.bounds.length };
+  },
+});
+
+/** Wipe rounds and outcome so a scenario can be replayed. */
+export const resetNegotiation = internalMutation({
+  args: { roomId: v.id("rooms") },
+  returns: v.object({ removed: v.number() }),
+  handler: async (ctx, args) => {
+    const rounds = await ctx.db
+      .query("rounds")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .take(100);
+    for (const r of rounds) await ctx.db.delete("rounds", r._id);
+
+    const agreements = await ctx.db
+      .query("agreements")
+      .withIndex("by_room", (q) => q.eq("roomId", args.roomId))
+      .take(10);
+    for (const a of agreements) await ctx.db.delete("agreements", a._id);
+
+    await ctx.db.patch("rooms", args.roomId, {
+      status: "negotiating",
+      currentRound: 0,
+      closedAt: undefined,
+      noDealDimension: undefined,
+    });
+    return { removed: rounds.length };
+  },
+});
