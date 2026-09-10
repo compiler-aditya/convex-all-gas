@@ -3,7 +3,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from 'cn'
 
 const buttonVariants = cva(
-  'inline-flex shrink-0 items-center justify-center gap-2 rounded-md border text-sm font-medium whitespace-nowrap select-none focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-border disabled:bg-muted disabled:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border text-sm font-medium whitespace-nowrap select-none transition-colors focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-border disabled:bg-muted disabled:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -15,14 +15,14 @@ const buttonVariants = cva(
         link: 'border-transparent bg-transparent text-foreground underline underline-offset-4 disabled:border-transparent disabled:bg-transparent',
       },
       size: {
-        default: 'h-9 px-3',
-        xs: 'h-7 px-1 text-[11px] [&_svg]:size-3',
-        sm: 'h-8 px-2',
-        lg: 'h-10 px-4',
-        icon: 'size-9',
-        'icon-xs': 'size-7 [&_svg]:size-3',
-        'icon-sm': 'size-8',
-        'icon-lg': 'size-10',
+        default: 'h-10 px-4',
+        xs: 'h-8 px-2',
+        sm: 'h-9 px-3',
+        lg: 'h-12 px-5',
+        icon: 'size-10',
+        'icon-xs': 'size-8',
+        'icon-sm': 'size-9',
+        'icon-lg': 'size-12',
       },
     },
     defaultVariants: { variant: 'default', size: 'default' },

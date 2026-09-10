@@ -36,7 +36,7 @@ function FieldContent({ className, ...props }: ComponentProps<'div'>) {
 }
 
 function FieldLabel({ className, ...props }: ComponentProps<typeof Label>) {
-  return <Label data-slot="field-label" className={cn('flex w-fit items-center gap-2 text-[12px] leading-normal font-medium', className)} {...props} />
+  return <Label data-slot="field-label" className={cn('flex w-fit items-center gap-2 text-sm leading-normal font-medium', className)} {...props} />
 }
 
 function FieldTitle({ className, ...props }: ComponentProps<'div'>) {
@@ -44,7 +44,7 @@ function FieldTitle({ className, ...props }: ComponentProps<'div'>) {
 }
 
 function FieldDescription({ className, ...props }: ComponentProps<'p'>) {
-  return <p data-slot="field-description" className={cn('text-[11px] leading-relaxed text-muted-foreground [&>a]:underline [&>a]:underline-offset-4', className)} {...props} />
+  return <p data-slot="field-description" className={cn('text-sm leading-relaxed text-muted-foreground [&>a]:underline [&>a]:underline-offset-4', className)} {...props} />
 }
 
 function FieldSeparator({ children, className, ...props }: ComponentProps<'div'> & { children?: ReactNode }) {

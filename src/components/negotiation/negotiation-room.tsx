@@ -1,36 +1,29 @@
-import { useEffect, useState } from 'react'
-import { ArrowLeftRight, ChevronRight, LockKeyhole } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { useEffect, useReducer, useState } from 'react'
+import { ArrowRightLeft, Blend, FlaskConical } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { AgentBriefing } from './agent-briefing'
 import { GapPanel } from './gap-panel'
 import { OfferRecord } from './offer-record'
 import { PrivatePositionPanel } from './private-position'
-import { previewStates, room } from './fixtures'
-import type { PreviewState } from './model'
+import { briefings, previewStates, room, scenarios } from './fixtures'
+import { createRoomSession, roomReducer, type PreviewState } from './model'
 
-const statusLabels: Record<PreviewState, string> = {
-  waiting: 'Awaiting counterparty',
-  negotiating: 'Negotiating',
-  'hard-limit': 'Negotiating',
-  settled: 'Settled',
-}
-
-const statusDescriptions: Record<PreviewState, string> = {
-  waiting: 'Waiting for Devin to set their position.',
-  negotiating: 'Your agent is considering the latest offer.',
-  'hard-limit': 'Your fee floor is fixed. Other terms can still move.',
-  settled: 'Both sides confirmed. Neither side’s limits were revealed.',
-}
+type Appearance = 'system' | 'light' | 'dark'
 
 export function NegotiationRoom() {
-  const [preview, setPreview] = useState<PreviewState>('negotiating')
-  const [appearance, setAppearance] = useState<'light' | 'dark'>('light')
+  const [session, dispatch] = useReducer(roomReducer, undefined, () => createRoomSession())
+  const [appearance, setAppearance] = useState<Appearance>('system')
+  const scenario = scenarios[session.scenario]
 
   useEffect(() => {
-    document.documentElement.dataset.theme = appearance
-    const themeColor = document.querySelector('meta[name="theme-color"]')
-    themeColor?.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--background').trim())
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const applyTheme = () => {
+      document.documentElement.dataset.theme = appearance === 'system' ? (media.matches ? 'dark' : 'light') : appearance
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', getComputedStyle(document.documentElement).backgroundColor)
+    }
+    applyTheme()
+    media.addEventListener('change', applyTheme)
+    return () => media.removeEventListener('change', applyTheme)
   }, [appearance])
 
   return (
@@ -38,69 +31,83 @@ export function NegotiationRoom() {
       <a className="skip-link" href="#room-content">Skip to negotiation room</a>
       <header className="site-header">
         <div className="site-header-inner">
-          <div className="flex items-center gap-6">
-            <a className="wordmark" href="/" aria-label="Overlap home">overlap<span aria-hidden="true">.</span></a>
+          <div className="brand-cluster">
+            <a className="wordmark" href="#room-content" aria-label="Overlap negotiation room">
+              <Blend className="brand-symbol" aria-hidden="true" strokeWidth={1.8} />
+              overlap
+            </a>
             <Separator orientation="vertical" className="brand-divider" />
-            <nav aria-label="Breadcrumb" className="room-breadcrumb">
-              <span>Negotiation room</span>
-              <ChevronRight className="size-3" aria-hidden="true" />
-              <span className="font-mono tabular-nums">{room.id}</span>
-            </nav>
+            <span className="workspace-label">Negotiation room</span>
           </div>
-          <div className="viewer-label"><span>Viewing as</span><span className="text-foreground">Maya</span><span aria-hidden="true">/</span><span>Freelancer</span></div>
+          <p className="header-demo-label">Demo <span aria-hidden="true">·</span> mock data</p>
         </div>
       </header>
 
-      <main className="room-main" id="room-content">
+      <main className="room-main" id="room-content" tabIndex={-1}>
         <section className="room-intro" aria-labelledby="room-title">
-          <div className="flex flex-col gap-2">
-            <p className="section-label">Freelance contract</p>
+          <div className="intro-copy">
+            <p className="project-type">Freelance contract</p>
             <h1 id="room-title" className="room-title text-balance">{room.title}</h1>
             <div className="room-participants">
-              <span>Maya <span className="text-muted-foreground">/ freelancer</span></span>
-              <ArrowLeftRight className="size-3 text-muted-foreground" aria-label="negotiating with" />
-              <span>Devin <span className="text-muted-foreground">/ client</span></span>
-              <span className="intro-description">{room.description}</span>
+              <span><span className="participant-name">Maya <span className="participant-you">(you)</span></span><span className="participant-role"> · Freelancer</span></span>
+              <ArrowRightLeft className="size-4" aria-label="negotiating with" />
+              <span><span className="participant-name">Devin</span><span className="participant-role"> · Client</span></span>
             </div>
           </div>
-          <div className="room-status-block">
-            <div className="flex items-center gap-3">
-              <Badge variant="outline">{statusLabels[preview]}</Badge>
-              <span className="round-counter font-mono tabular-nums">round {preview === 'waiting' ? '0' : '4'} of {room.maxRounds}</span>
-            </div>
-            <p className="room-status-description" role="status">{statusDescriptions[preview]}</p>
-          </div>
+          <PrivatePositionPanel
+            preview={session.scenario}
+            open={session.sheet === 'brief'}
+            onOpenChange={(open) => dispatch({ type: 'sheet', value: open ? 'brief' : null })}
+          />
         </section>
 
-        <Tabs value={preview} onValueChange={(value) => setPreview(value as PreviewState)} className="room-state-tabs">
-          <div className="preview-toolbar">
-            <div className="preview-toolbar-controls">
-              <span className="section-label preview-label" id="preview-label">Preview state</span>
-              <TabsList variant="line" aria-labelledby="preview-label">
-                {previewStates.map((state) => <TabsTrigger key={state.value} value={state.value}>{state.label}</TabsTrigger>)}
-              </TabsList>
-            </div>
-            <span className="static-preview-label">Static data <span aria-hidden="true">·</span> nothing is sent</span>
+        <div className="room-story" key={session.scenario}>
+          <div className="room-panels">
+            <AgentBriefing
+              copy={briefings[session.scenario]}
+              scenario={scenario}
+              guidance={session}
+              onGuidanceToggle={(open) => dispatch({ type: 'guidance-open', value: open })}
+              onDraftChange={(value) => dispatch({ type: 'guidance-draft', value })}
+              onAddGuidance={() => dispatch({ type: 'guidance-add' })}
+              agreementOpen={session.sheet === 'agreement'}
+              onAgreementOpenChange={(open) => dispatch({ type: 'sheet', value: open ? 'agreement' : null })}
+            />
+            <GapPanel
+              scenario={scenario}
+              expandedTerms={session.expandedTerms}
+              onExpandedTermsChange={(value) => dispatch({ type: 'terms', value })}
+            />
           </div>
-          {previewStates.map((state) => (
-            <TabsContent value={state.value} key={state.value}>
-              <div className="negotiation-board">
-                <PrivatePositionPanel preview={state.value} />
-                <OfferRecord preview={state.value} />
-                <GapPanel preview={state.value} />
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs>
+          {scenario.offers.length > 0 && (
+            <OfferRecord
+              scenario={scenario}
+              open={session.sheet === 'history'}
+              onOpenChange={(open) => dispatch({ type: 'sheet', value: open ? 'history' : null })}
+              expandedOffers={session.expandedOffers}
+              onExpandedOffersChange={(value) => dispatch({ type: 'offers', value })}
+            />
+          )}
+        </div>
 
         <footer className="room-footer">
-          <p className="privacy-footer"><LockKeyhole className="size-3 shrink-0" aria-hidden="true" />Your limits never enter the shared record.</p>
-          <div className="appearance-control">
-            <label htmlFor="appearance">Appearance</label>
-            <select id="appearance" value={appearance} onChange={(event) => setAppearance(event.target.value as 'light' | 'dark')}>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-            </select>
+          <p className="demo-label"><FlaskConical className="size-4" aria-hidden="true" />Demo <span aria-hidden="true">·</span> mock data</p>
+          <div className="demo-controls">
+            <div className="footer-control">
+              <label htmlFor="demo-scenario">Scenario</label>
+              <select id="demo-scenario" value={session.scenario} onChange={(event) => dispatch({ type: 'scenario', value: event.target.value as PreviewState })}>
+                {previewStates.map((state) => <option value={state.value} key={state.value}>{state.label}</option>)}
+              </select>
+            </div>
+            <Separator orientation="vertical" className="footer-divider" />
+            <div className="footer-control">
+              <label htmlFor="appearance">Appearance</label>
+              <select id="appearance" value={appearance} onChange={(event) => setAppearance(event.target.value as Appearance)}>
+                <option value="system">System</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </select>
+            </div>
           </div>
         </footer>
       </main>

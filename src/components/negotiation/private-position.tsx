@@ -1,83 +1,42 @@
-import { ChevronDown, LockKeyhole } from 'lucide-react'
+import { LockKeyhole, ShieldCheck } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { getMyPosition, mySide, template } from './fixtures'
-import { formatValue, getLimitDirection, type PreviewState } from './model'
+import { formatValue, getLimitDirection, type PreviewState, type PrivatePosition } from './model'
 
-function PositionSummary({ preview }: { preview: PreviewState }) {
-  return (
-    <div className="position-content">
-      <div className="private-statement">
-        <p>Only you will ever see this.</p>
-        <p>Your agent uses it; it is never sent to the other side.</p>
-      </div>
-      <div className="private-sheet">
-        <dl className="private-terms">
-          {template.dimensions.map((dimension) => {
-            const position = getMyPosition(dimension.key, preview)
-            const minimum = getLimitDirection(dimension, mySide) === 'minimum'
-            return (
-              <div className="private-term" key={dimension.key}>
-                <dt className="flex items-center justify-between gap-2">
-                  <span>{dimension.label}</span>
-                  {position.isHard && <span className="fixed-caption">fixed</span>}
-                </dt>
-                <dd className="private-term-content">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span className="private-limit-label">{minimum ? 'Never below' : 'Never above'}</span>
-                    <span className="font-mono font-medium tabular-nums">{formatValue(dimension, position.limit)}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="private-priority-label">Priority</span>
-                    <span className="priority" aria-label={`Priority ${position.priority} of 5`}>
-                      {[1, 2, 3, 4, 5].map((step) => (
-                        <span key={step} className="priority-segment" data-filled={step <= position.priority || undefined} aria-hidden="true" />
-                      ))}
-                    </span>
-                  </div>
-                </dd>
-              </div>
-            )
-          })}
-        </dl>
-        <p className="private-sheet-footer">
-          <LockKeyhole className="size-3" aria-hidden="true" />
-          <span>yours · not sent</span>
-        </p>
-      </div>
-      <div className="position-lock-note">
-        <p>{preview === 'waiting' ? 'Your position is ready.' : 'Your position is locked.'}</p>
-        <p className="text-muted-foreground">
-          {preview === 'waiting'
-            ? 'The other side will set their own limits privately.'
-            : 'Limits cannot be edited once negotiation begins.'}
-        </p>
-      </div>
-      <div className="private-bottom-note">
-        <LockKeyhole className="size-4 shrink-0" aria-hidden="true" />
-        <p>You will never see Devin&apos;s limits. Devin will never see yours.</p>
-      </div>
-    </div>
-  )
+const priorityLabels: Record<PrivatePosition['priority'], string> = {
+  1: 'Low', 2: 'Lower', 3: 'Medium', 4: 'High', 5: 'Highest',
 }
 
-export function PrivatePositionPanel({ preview }: { preview: PreviewState }) {
+export function PrivatePositionPanel({ preview, open, onOpenChange }: { preview: PreviewState; open: boolean; onOpenChange: (value: boolean) => void }) {
   return (
-    <aside className="position-panel" aria-labelledby="position-heading">
-      <header className="column-heading position-desktop-heading">
-        <div className="flex flex-col gap-1">
-          <h2 id="position-heading" className="section-label">Your position</h2>
-          <p className="column-subtitle private-subtitle"><LockKeyhole className="size-3" aria-hidden="true" /> Private to you</p>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetTrigger render={<Button variant="outline" />}><LockKeyhole data-icon="inline-start" aria-hidden="true" />Your private brief</SheetTrigger>
+      <SheetContent data-private-brief>
+        <SheetHeader><SheetTitle>Your private brief</SheetTitle><SheetDescription>For your agent, not for Devin. Your limits and priorities stay out of published offers.</SheetDescription></SheetHeader>
+        <div className="sheet-body private-brief-body">
+          <dl className="private-terms">
+            {template.dimensions.map((dimension) => {
+              const position = getMyPosition(dimension.key, preview)
+              const minimum = getLimitDirection(dimension, mySide) === 'minimum'
+              return (
+                <div className="private-term" key={dimension.key}>
+                  <dt><span>{dimension.label}</span>{position.isHard && <Badge variant="default"><LockKeyhole data-icon="inline-start" aria-hidden="true" />Fixed boundary</Badge>}</dt>
+                  <dd>
+                    <div className="private-amount"><span>{minimum ? 'At least' : 'Up to'}</span><strong className="tabular-nums">{formatValue(dimension, position.limit)}</strong></div>
+                    <div className="private-priority"><span>Priority</span><span>{priorityLabels[position.priority]}</span></div>
+                    {position.isHard && <p className="fixed-boundary-note">Your agent cannot cross this boundary. Guidance will not change it.</p>}
+                  </dd>
+                </div>
+              )
+            })}
+          </dl>
+          <Alert role="note"><ShieldCheck aria-hidden="true" /><AlertTitle>{preview === 'waiting' ? 'Your brief is ready' : 'Your limits are locked'}</AlertTitle><AlertDescription>{preview === 'waiting' ? 'This demo brief is read-only. Once negotiation starts, your limits stay locked.' : 'Limits cannot be edited once negotiation starts. You can still give your agent context without changing them.'}</AlertDescription></Alert>
+          <p className="sheet-footnote">Only your brief is available here. Devin&apos;s private limits are never shown or used in this preview.</p>
         </div>
-        <Button variant="link" size="xs" disabled title="Position editing is not available in this static preview.">Edit</Button>
-      </header>
-      <div className="position-desktop-content"><PositionSummary preview={preview} /></div>
-      <details className="position-mobile-disclosure">
-        <summary>
-          <span className="flex items-center gap-2"><LockKeyhole className="size-4" aria-hidden="true" /><span>Your position · private</span></span>
-          <ChevronDown className="size-4 disclosure-chevron" aria-hidden="true" />
-        </summary>
-        <PositionSummary preview={preview} />
-      </details>
-    </aside>
+      </SheetContent>
+    </Sheet>
   )
 }

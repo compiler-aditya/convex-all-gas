@@ -3,10 +3,10 @@ import { useRender } from '@base-ui/react/use-render'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from 'cn'
 
-const badgeVariants = cva('inline-flex w-fit shrink-0 items-center justify-center rounded-sm border px-2 py-1 text-[11px] font-medium whitespace-nowrap [&>svg]:size-3', {
+const badgeVariants = cva('inline-flex w-fit shrink-0 items-center justify-center gap-1.5 rounded-full border px-2.5 py-1 text-sm font-medium whitespace-nowrap [&>svg]:size-4', {
   variants: {
     variant: {
-      default: 'border-border bg-background text-foreground',
+      default: 'border-transparent bg-accent text-accent-foreground',
       secondary: 'border-border bg-background text-muted-foreground',
       destructive: 'border-foreground bg-background text-foreground',
       outline: 'border-border bg-transparent text-foreground',
