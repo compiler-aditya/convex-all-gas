@@ -1,19 +1,26 @@
-import { useEffect, useReducer, useState } from 'react'
-import { ArrowRightLeft, Blend, FlaskConical } from 'lucide-react'
+import { useEffect, useReducer, useState, type ReactNode } from 'react'
+import { ArrowRightLeft, Blend } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { AgentBriefing } from './agent-briefing'
 import { GapPanel } from './gap-panel'
 import { OfferRecord } from './offer-record'
 import { PrivatePositionPanel } from './private-position'
-import { briefings, previewStates, room, scenarios } from './fixtures'
-import { createRoomSession, roomReducer, type PreviewState } from './model'
+import { useRoom } from './room-context'
+import { createRoomSession, roomReducer } from './model'
 
 type Appearance = 'system' | 'light' | 'dark'
 
-export function NegotiationRoom() {
+/**
+ * The room. Reads its data from context, so the same component renders against
+ * fixtures in the preview and against live Convex data in the app.
+ *
+ * `demoFooter` is how the preview injects its scenario switcher. The app passes
+ * nothing, which is what keeps demo controls out of the product.
+ */
+export function NegotiationRoom({ demoFooter }: { demoFooter?: ReactNode } = {}) {
+  const { room, scenario, briefing, template, mySide } = useRoom()
   const [session, dispatch] = useReducer(roomReducer, undefined, () => createRoomSession())
   const [appearance, setAppearance] = useState<Appearance>('system')
-  const scenario = scenarios[session.scenario]
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)')
@@ -39,7 +46,9 @@ export function NegotiationRoom() {
             <Separator orientation="vertical" className="brand-divider" />
             <span className="workspace-label">Negotiation room</span>
           </div>
-          <p className="header-demo-label">Demo <span aria-hidden="true">·</span> mock data</p>
+          {demoFooter !== undefined && (
+            <p className="header-demo-label">Preview <span aria-hidden="true">·</span> fixtures</p>
+          )}
         </div>
       </header>
 
@@ -49,22 +58,22 @@ export function NegotiationRoom() {
             <p className="project-type">Freelance contract</p>
             <h1 id="room-title" className="room-title text-balance">{room.title}</h1>
             <div className="room-participants">
-              <span><span className="participant-name">Maya <span className="participant-you">(you)</span></span><span className="participant-role"> · Freelancer</span></span>
+              <span><span className="participant-name">{room.myName} <span className="participant-you">(you)</span></span><span className="participant-role"> · {mySide === 'a' ? template.sideALabel : template.sideBLabel}</span></span>
               <ArrowRightLeft className="size-4" aria-label="negotiating with" />
-              <span><span className="participant-name">Devin</span><span className="participant-role"> · Client</span></span>
+              <span><span className="participant-name">{room.counterpartyName}</span><span className="participant-role"> · {mySide === 'a' ? template.sideBLabel : template.sideALabel}</span></span>
             </div>
           </div>
           <PrivatePositionPanel
-            preview={session.scenario}
+            preview={scenario.status}
             open={session.sheet === 'brief'}
             onOpenChange={(open) => dispatch({ type: 'sheet', value: open ? 'brief' : null })}
           />
         </section>
 
-        <div className="room-story" key={session.scenario}>
+        <div className="room-story" key={scenario.status}>
           <div className="room-panels">
             <AgentBriefing
-              copy={briefings[session.scenario]}
+              copy={briefing}
               scenario={scenario}
               guidance={session}
               onGuidanceToggle={(open) => dispatch({ type: 'guidance-open', value: open })}
@@ -90,16 +99,9 @@ export function NegotiationRoom() {
           )}
         </div>
 
-        <footer className="room-footer">
-          <p className="demo-label"><FlaskConical className="size-4" aria-hidden="true" />Demo <span aria-hidden="true">·</span> mock data</p>
-          <div className="demo-controls">
-            <div className="footer-control">
-              <label htmlFor="demo-scenario">Scenario</label>
-              <select id="demo-scenario" value={session.scenario} onChange={(event) => dispatch({ type: 'scenario', value: event.target.value as PreviewState })}>
-                {previewStates.map((state) => <option value={state.value} key={state.value}>{state.label}</option>)}
-              </select>
-            </div>
-            <Separator orientation="vertical" className="footer-divider" />
+        {demoFooter !== undefined && (
+          <footer className="room-footer">
+            {demoFooter}
             <div className="footer-control">
               <label htmlFor="appearance">Appearance</label>
               <select id="appearance" value={appearance} onChange={(event) => setAppearance(event.target.value as Appearance)}>
@@ -108,8 +110,8 @@ export function NegotiationRoom() {
                 <option value="dark">Dark</option>
               </select>
             </div>
-          </div>
-        </footer>
+          </footer>
+        )}
       </main>
     </div>
   )

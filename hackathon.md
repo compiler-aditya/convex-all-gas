@@ -12,7 +12,7 @@
 - **Auth:** Convex Auth
 - **AI models:** gemini-3.5-flash (development; provider is switchable by env var)
 - **Started:** 2026-09-09T17:31:07Z
-- **Last updated:** 2026-09-10T02:34:06Z
+- **Last updated:** 2026-09-10T05:56:01Z
 
 ## Log
 
@@ -225,3 +225,31 @@ Confirming an agreement sets only the caller's own flag, and nothing is binding
 until both are set. Starting a negotiation refuses politely when a side has not
 set a position rather than throwing, so the interface can render the reason
 instead of an error.
+
+### 2026-09-10 - working tree
+The interface now runs on live data. The room components were decoupled from
+their fixtures behind a small context, so the same components render against
+mock data in a design preview and against Convex in the application
+(`src/components/negotiation/room-context.tsx`, `src/lib/live-room.ts`). The
+counterparty reaches a room through a link carrying a token, which authenticates
+every query and mutation they make without an account
+(`src/routes/RoomRoute.tsx`).
+
+Per-dimension comparison tracks were already built but collapsed behind
+accordions, so the one view that shows how far apart the two sides are was
+never on screen. Terms still under negotiation now open by default. Display
+scales are derived from the public offers and the viewer's own limit, so they
+adapt to real values and still cannot disclose anything.
+
+Verified against a real negotiation rather than fixtures: the room renders the
+settled state, the track shows the viewer's own ceiling marked fixed, and a
+search of the rendered document confirms the other side's floor appears nowhere
+in it while the viewer's own limit does — so the check is meaningful rather
+than vacuous.
+
+Three faults were fixed on the way. A viewer may leave a term unbounded, which
+crashed a track that assumed a limit always exists; those terms now show the
+public comparison and say plainly that nothing private backs it. The
+counterparty's name was hardcoded in five places. And the application entry
+point had been replaced by a fixtures-only harness, so the product booted into
+mock data.

@@ -4,10 +4,11 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { mySide, room, template } from './fixtures'
+import { useRoom } from './room-context'
 import { formatTime, formatValue, getConfirmedProposal, getOfferHistory, getPublicActivity, type OfferHistoryEntry, type PublicScenario } from './model'
 
 function OfferEntry({ entry, latest }: { entry: OfferHistoryEntry; latest: boolean }) {
+  const { template, mySide, room } = useRoom()
   const { offer, deltas } = entry
   const isMine = offer.bySide === mySide
   const opening = Object.values(deltas).every((delta) => delta.previous === null)
@@ -16,7 +17,7 @@ function OfferEntry({ entry, latest }: { entry: OfferHistoryEntry; latest: boole
     <AccordionItem value={offer.id} className="history-entry" data-offer-id={offer.id}>
       <AccordionTrigger className="history-trigger">
         <span className="history-trigger-copy">
-          <span className="history-offer-heading"><span>{isMine ? 'Your agent’s' : 'Devin’s'} {opening ? 'opening offer' : 'counteroffer'}</span>{latest && <Badge variant="secondary">Latest</Badge>}</span>
+          <span className="history-offer-heading"><span>{isMine ? 'Your agent’s' : `${room.counterpartyName}’s`} {opening ? 'opening offer' : 'counteroffer'}</span>{latest && <Badge variant="secondary">Latest</Badge>}</span>
           <span className="history-offer-meta"><span>Offer {offer.round}</span><span aria-hidden="true">·</span><time dateTime={offer.createdAt}>{formatTime(offer.createdAt)}</time></span>
         </span>
       </AccordionTrigger>
@@ -42,7 +43,7 @@ function OfferEntry({ entry, latest }: { entry: OfferHistoryEntry; latest: boole
             })}
           </tbody>
         </table>
-        <p className="offer-delta-note">Changes are relative to {isMine ? 'your agent’s' : 'Devin’s'} previous offer, not the other side&apos;s.</p>
+        <p className="offer-delta-note">Changes are relative to {isMine ? 'your agent’s' : `${room.counterpartyName}’s`} previous offer, not the other side&apos;s.</p>
         {offer.citations.length > 0 && <div className="offer-citations"><h4>Referenced sources</h4>{offer.citations.map((citation) => <a href={citation.url} key={citation.url} target="_blank" rel="noopener noreferrer">{citation.title}<ArrowUpRight className="size-4" aria-hidden="true" /><span className="sr-only"> (opens in a new tab)</span></a>)}</div>}
       </AccordionContent>
     </AccordionItem>
@@ -50,6 +51,7 @@ function OfferEntry({ entry, latest }: { entry: OfferHistoryEntry; latest: boole
 }
 
 function ConfirmationEvents({ scenario }: { scenario: PublicScenario }) {
+  const { mySide, room } = useRoom()
   const proposal = getConfirmedProposal(scenario)
   if (!proposal) return null
   return (
@@ -68,6 +70,7 @@ export function OfferRecord({ scenario, open, onOpenChange, expandedOffers, onEx
   expandedOffers: string[]
   onExpandedOffersChange: (value: string[]) => void
 }) {
+  const { template, mySide, room } = useRoom()
   const history = getOfferHistory(scenario.offers)
   const activity = getPublicActivity(scenario, template.dimensions, mySide, room.myName, room.counterpartyName)
 
@@ -106,6 +109,7 @@ export function OfferRecord({ scenario, open, onOpenChange, expandedOffers, onEx
 }
 
 export function AgreementReview({ scenario, open, onOpenChange }: { scenario: PublicScenario; open: boolean; onOpenChange: (value: boolean) => void }) {
+  const { template, room, mySide } = useRoom()
   const proposal = getConfirmedProposal(scenario)
   if (!proposal) return null
 
@@ -113,7 +117,7 @@ export function AgreementReview({ scenario, open, onOpenChange }: { scenario: Pu
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger render={<Button size="lg" />}>Review agreement<FileText data-icon="inline-end" aria-hidden="true" /></SheetTrigger>
       <SheetContent data-public-agreement>
-        <SheetHeader><SheetTitle>Example agreement</SheetTitle><SheetDescription>{room.title}<br />{room.myName} · Freelancer &amp; {room.counterpartyName} · Client</SheetDescription></SheetHeader>
+        <SheetHeader><SheetTitle>Example agreement</SheetTitle><SheetDescription>{room.title}<br />{room.myName} · {mySide === 'a' ? template.sideALabel : template.sideBLabel} &amp; {room.counterpartyName} · {mySide === 'a' ? template.sideBLabel : template.sideALabel}</SheetDescription></SheetHeader>
         <div className="sheet-body agreement-body">
           <section aria-labelledby="final-terms-heading"><h3 id="final-terms-heading" className="sheet-section-heading">The confirmed terms</h3><dl className="agreement-terms">{template.dimensions.map((dimension) => <div key={dimension.key}><dt>{dimension.label}</dt><dd className="tabular-nums">{formatValue(dimension, proposal.terms[dimension.key])}</dd></div>)}</dl></section>
           <ConfirmationEvents scenario={scenario} />
