@@ -32,6 +32,12 @@ export function PageShell({
             <Blend className="size-5" strokeWidth={1.8} aria-hidden="true" />
             overlap
           </Link>
+          <Link
+            to="/rooms"
+            className="ml-auto text-xs text-muted-foreground underline underline-offset-4"
+          >
+            Your negotiations
+          </Link>
         </div>
       </header>
 

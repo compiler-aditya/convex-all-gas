@@ -12,7 +12,7 @@
 - **Auth:** Convex Auth
 - **AI models:** gemini-3.5-flash (development; provider is switchable by env var)
 - **Started:** 2026-09-09T17:31:07Z
-- **Last updated:** 2026-09-10T06:04:15Z
+- **Last updated:** 2026-09-10T06:12:52Z
 
 ## Log
 
@@ -276,3 +276,23 @@ One behaviour worth recording: opening your own invite link while signed in
 shows your own view, because the caller is resolved from the session before the
 link token is considered. That is correct, and it means a demonstration needs
 two separate browser sessions rather than two tabs.
+
+### 2026-09-10 - working tree
+A landing page and a sign-in screen in the product's own visual language
+(`src/routes/LandingRoute.tsx`, `src/components/SignIn.tsx`). The landing page
+states the mechanism rather than selling it: the worked example carries the
+argument, with the two private figures set in the colour that means "yours,
+never sent" everywhere else. A single drawing shows two agents with their own
+inboxes exchanging cited offers over one shared board, in hairline strokes with
+colour used only on the two private limits.
+
+Routing was restructured so the landing page is public, the negotiation room
+stays reachable without an account, and only room creation is gated. Previously
+the first screen a visitor saw was a bare sign-in form in a different visual
+language from the product.
+
+Reactivity was verified without spending any of the daily email allowance. With
+a room open in a browser and untouched, rounds were driven through the offline
+path; the heading, the term comparison and three dimension tracks all appeared
+without a reload. The two paths write identical rounds, so the live view behaves
+the same whichever drives it.

@@ -1,8 +1,7 @@
 import { useAuthActions } from '@convex-dev/auth/react'
-import { Authenticated, AuthLoading, Unauthenticated, useQuery } from 'convex/react'
+import { useQuery } from 'convex/react'
 import { Link } from 'react-router-dom'
 import { api } from '../convex/_generated/api'
-import { SignIn } from './components/SignIn'
 
 /**
  * Shell for the authenticated area.
@@ -10,7 +9,7 @@ import { SignIn } from './components/SignIn'
  * Deliberately plain: the design pass happens in v0 and lands on the room
  * screen, which is the one that carries the demo.
  */
-function Dashboard() {
+export function Dashboard() {
   const { signOut } = useAuthActions()
   const rooms = useQuery(api.rooms.myRooms)
 
@@ -18,10 +17,10 @@ function Dashboard() {
     <div className="mx-auto w-full max-w-2xl p-6">
       <header className="flex items-baseline justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">
+          <h1 className="text-2xl font-semibold text-foreground">
             Overlap
           </h1>
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          <p className="text-sm text-muted-foreground">
             Your negotiations
           </p>
         </div>
@@ -44,10 +43,10 @@ function Dashboard() {
 
       <section className="mt-8">
         {rooms === undefined ? (
-          <p className="text-sm text-neutral-500">Loading…</p>
+          <p className="text-sm text-muted-foreground">Loading…</p>
         ) : rooms.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-neutral-300 p-8 text-center dark:border-neutral-700">
-            <p className="text-neutral-700 dark:text-neutral-300">
+          <div className="rounded-md border border-dashed border-border p-8 text-center">
+            <p className="text-foreground">
               No negotiations yet.
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -62,7 +61,7 @@ function Dashboard() {
             </Link>
           </div>
         ) : (
-          <ul className="divide-y divide-neutral-200 dark:divide-neutral-800">
+          <ul className="divide-y divide-border">
             {rooms.map((room) => (
               <li key={room.roomId}>
                 <Link
@@ -85,22 +84,8 @@ function Dashboard() {
 
 export default function App() {
   return (
-    <main className="min-h-full bg-neutral-50 dark:bg-neutral-950">
-      <AuthLoading>
-        <div className="grid min-h-screen place-items-center">
-          <p className="text-sm text-neutral-500">Checking your session…</p>
-        </div>
-      </AuthLoading>
-
-      <Unauthenticated>
-        <div className="grid min-h-screen place-items-center p-6">
-          <SignIn />
-        </div>
-      </Unauthenticated>
-
-      <Authenticated>
-        <Dashboard />
-      </Authenticated>
-    </main>
+    <div className="min-h-dvh bg-background">
+      <Dashboard />
+    </div>
   )
 }
