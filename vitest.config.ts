@@ -1,10 +1,14 @@
+import path from "node:path";
+import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  plugins: [react()],
+  resolve: { alias: { "@": path.resolve(import.meta.dirname, "./src") } },
   test: {
     // convex-test runs functions in a Convex-like isolate, not Node.
     environment: "edge-runtime",
     server: { deps: { inline: ["convex-test"] } },
-    include: ["convex/**/*.test.ts", "src/components/negotiation/**/*.test.ts"],
+    include: ["convex/**/*.test.ts", "src/components/negotiation/**/*.test.ts", "src/components/landing/**/*.test.tsx"],
   },
 });

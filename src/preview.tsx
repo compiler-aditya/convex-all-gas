@@ -1,5 +1,6 @@
 import { StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import { LandingPage } from './components/landing/landing-page'
 import { NegotiationRoom } from './components/negotiation/negotiation-room'
 import { RoomProvider, type RoomData } from './components/negotiation/room-context'
 import {
@@ -18,11 +19,15 @@ import './index.css'
 /**
  * Design iteration against fixtures.
  *
- * Deliberately initialises neither Convex nor authentication, and passes no
- * actions — there is nothing here to send. The scenario switcher is injected as
- * the room's `demoFooter`, which is what keeps demo controls out of the app.
+ * Initialises neither Convex nor authentication, and passes no actions — there
+ * is nothing here to send. `?demo=1` swaps the landing page for the room, which
+ * is how the landing page's own links reach it.
+ *
+ * The room is wrapped in a fixture-backed provider here. Rendering it without
+ * one throws, which is deliberate: it means the component cannot silently fall
+ * back to mock data inside the real application.
  */
-function Preview() {
+function PreviewRoom() {
   const [scenarioKey, setScenarioKey] = useState<PreviewState>('negotiating')
 
   const value: RoomData = {
@@ -59,8 +64,11 @@ function Preview() {
   )
 }
 
+const showDemo = new URLSearchParams(window.location.search).get('demo') === '1'
+document.title = showDemo
+  ? 'Negotiation demo — Overlap'
+  : 'Overlap — Different sides. Common ground.'
+
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <Preview />
-  </StrictMode>,
+  <StrictMode>{showDemo ? <PreviewRoom /> : <LandingPage />}</StrictMode>,
 )

@@ -3,10 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#fafaf9" />
+    <meta name="theme-color" content="#f5f6f2" />
     <meta name="color-scheme" content="light dark" />
-    <meta name="description" content="Two agents negotiate on your behalf, each holding one side's private limits, so a deal is found without either side revealing their number." />
-    <title>Overlap</title>
+    <meta name="description" content="Different sides. Common ground. Discover Overlap, an agent-led negotiation workspace built around private priorities, clear terms, and agreements that work for both people. Explore the interactive demo." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Overlap" />
+    <meta property="og:title" content="Overlap — Different sides. Common ground." />
+    <meta property="og:description" content="Your agent. Your terms. A better way to find common ground. Explore the Overlap negotiation demo—no sign-up required." />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Overlap — Different sides. Common ground." />
+    <meta name="twitter:description" content="Your agent. Your terms. Explore a more thoughtful way to negotiate." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Overlap — Different sides. Common ground.</title>
+    <script>
+      (() => {
+        let appearance = 'system';
+        try {
+          const saved = localStorage.getItem('overlap-appearance');
+          if (saved === 'light' || saved === 'dark') appearance = saved;
+        } catch {}
+        const dark = appearance === 'dark' || (appearance === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.appearance = appearance;
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', dark ? '#17211c' : '#f5f6f2');
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

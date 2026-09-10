@@ -1,14 +1,13 @@
-import { useEffect, useReducer, useState, type ReactNode } from 'react'
+import { useReducer, useState, type ReactNode } from 'react'
 import { ArrowRightLeft, Blend } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
+import { useAppearance, type Appearance } from '@/hooks/use-appearance'
 import { AgentBriefing } from './agent-briefing'
 import { GapPanel } from './gap-panel'
 import { OfferRecord } from './offer-record'
 import { PrivatePositionPanel } from './private-position'
 import { useRoom } from './room-context'
 import { createRoomSession, roomReducer } from './model'
-
-type Appearance = 'system' | 'light' | 'dark'
 
 /**
  * The room. Reads its data from context, so the same component renders against
@@ -22,18 +21,7 @@ export function NegotiationRoom({ demoFooter }: { demoFooter?: ReactNode } = {})
   const [starting, setStarting] = useState(false)
   const [startError, setStartError] = useState<string | null>(null)
   const [session, dispatch] = useReducer(roomReducer, undefined, () => createRoomSession())
-  const [appearance, setAppearance] = useState<Appearance>('system')
-
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-color-scheme: dark)')
-    const applyTheme = () => {
-      document.documentElement.dataset.theme = appearance === 'system' ? (media.matches ? 'dark' : 'light') : appearance
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', getComputedStyle(document.documentElement).backgroundColor)
-    }
-    applyTheme()
-    media.addEventListener('change', applyTheme)
-    return () => media.removeEventListener('change', applyTheme)
-  }, [appearance])
+  const { appearance, setAppearance } = useAppearance()
 
   return (
     <div className="room-page font-sans">
@@ -41,7 +29,7 @@ export function NegotiationRoom({ demoFooter }: { demoFooter?: ReactNode } = {})
       <header className="site-header">
         <div className="site-header-inner">
           <div className="brand-cluster">
-            <a className="wordmark" href="#room-content" aria-label="Overlap negotiation room">
+            <a className="wordmark" href="/" aria-label="Overlap home">
               <Blend className="brand-symbol" aria-hidden="true" strokeWidth={1.8} />
               overlap
             </a>

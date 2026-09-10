@@ -12,7 +12,7 @@
 - **Auth:** Convex Auth
 - **AI models:** gemini-3.5-flash (development; provider is switchable by env var)
 - **Started:** 2026-09-09T17:31:07Z
-- **Last updated:** 2026-09-10T06:12:52Z
+- **Last updated:** 2026-09-10T09:25:40Z
 
 ## Log
 
@@ -296,3 +296,28 @@ a room open in a browser and untouched, rounds were driven through the offline
 path; the heading, the term comparison and three dimension tracks all appeared
 without a reload. The two paths write identical rounds, so the live view behaves
 the same whichever drives it.
+
+### 2026-09-10 - working tree
+Adopted a designed landing page and added Google sign-in.
+
+The landing page replaces the one written earlier. Its hero is the product's
+thesis as a picture: two overlapping circles labelled with each side's own
+private brief, meeting in the middle. Its calls to action were rewired to the
+application's real routes — one starts a negotiation, the rest open a worked
+example that needs no account, which is a reasonable thing for a visitor to
+want before committing to anything.
+
+Merging it needed care. The branch was six commits behind and had reverted the
+room to fixtures, so a straight take would have undone the live data wiring.
+The room kept its context-driven version and gained the appearance hook the
+branch introduced; the page metadata and a theme script that runs before paint
+were taken wholesale.
+
+The branch also brought tests for the landing page, which failed after the
+routes changed. They were updated rather than deleted: they check that every
+in-page anchor resolves to an element that exists, that the example is labelled
+as an example, and that no sign-up form appears on a page that promises none.
+
+Sign-in now offers Google alongside a password. Password is kept deliberately —
+the test suite authenticates with it, and local development should not require
+external credentials to exist (`convex/auth.ts`).
