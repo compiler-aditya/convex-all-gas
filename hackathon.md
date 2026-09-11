@@ -12,7 +12,7 @@
 - **Auth:** Convex Auth
 - **AI models:** gemini-3.5-flash (development; provider is switchable by env var)
 - **Started:** 2026-09-09T17:31:07Z
-- **Last updated:** 2026-09-10T09:25:40Z
+- **Last updated:** 2026-09-11T03:32:25Z
 
 ## Log
 
@@ -321,3 +321,21 @@ as an example, and that no sign-up form appears on a page that promises none.
 Sign-in now offers Google alongside a password. Password is kept deliberately —
 the test suite authenticates with it, and local development should not require
 external credentials to exist (`convex/auth.ts`).
+
+### 2026-09-11 - working tree
+Deployed to production and finished provisioning it. The site serves the current
+build, every route resolves, the authentication discovery documents return real
+JSON, and the signed webhook endpoint answers at its own address. Production has
+its own signing keypair, its own database, and its own inbox pool, seeded
+separately because a deployment shares no state with any other.
+
+Sign-in now shows the Google option only when the deployment actually holds
+Google credentials (`convex/providers.ts`). Offering a button that cannot
+complete is worse than not offering one, and a visitor cannot tell a
+misconfigured control from a broken product. The check reports presence, never
+values, so it discloses nothing — and the button turns itself on the moment the
+credentials are set, with no code change. Verified in both directions:
+placeholder credentials made it appear, removing them made it vanish.
+
+Password sign-in stays the path that always works, since it depends on no
+external account.

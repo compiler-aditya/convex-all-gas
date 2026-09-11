@@ -1,4 +1,6 @@
 import { useAuthActions } from '@convex-dev/auth/react'
+import { useQuery } from 'convex/react'
+import { api } from '../../convex/_generated/api'
 import { useState } from 'react'
 import { Blend } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -14,6 +16,7 @@ import { Input } from '@/components/ui/input'
  */
 export function SignIn() {
   const { signIn } = useAuthActions()
+  const providers = useQuery(api.providers.available)
   const [flow, setFlow] = useState<'signIn' | 'signUp'>('signIn')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -74,23 +77,30 @@ export function SignIn() {
           by link.
         </p>
 
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => void handleGoogle()}
-          className="mt-8 w-full"
+        {providers?.google === true && (
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void handleGoogle()}
+              className="mt-8 w-full"
+            >
+              <GoogleMark />
+              Continue with Google
+            </Button>
+
+            <div className="my-6 flex items-center gap-3" aria-hidden="true">
+              <span className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">or</span>
+              <span className="h-px flex-1 bg-border" />
+            </div>
+          </>
+        )}
+
+        <form
+          onSubmit={handleSubmit}
+          className={providers?.google === true ? 'grid gap-4' : 'mt-8 grid gap-4'}
         >
-          <GoogleMark />
-          Continue with Google
-        </Button>
-
-        <div className="my-6 flex items-center gap-3" aria-hidden="true">
-          <span className="h-px flex-1 bg-border" />
-          <span className="text-xs text-muted-foreground">or</span>
-          <span className="h-px flex-1 bg-border" />
-        </div>
-
-        <form onSubmit={handleSubmit} className="grid gap-4">
           <div className="grid gap-1.5">
             <label htmlFor="email" className="text-sm font-medium text-foreground">
               Email

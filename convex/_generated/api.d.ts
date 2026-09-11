@@ -25,6 +25,7 @@ import type * as lib_mask from "../lib/mask.js";
 import type * as lib_model from "../lib/model.js";
 import type * as lib_svix from "../lib/svix.js";
 import type * as negotiation from "../negotiation.js";
+import type * as providers from "../providers.js";
 import type * as rooms from "../rooms.js";
 import type * as rounds from "../rounds.js";
 import type * as seed from "../seed.js";
@@ -55,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   "lib/model": typeof lib_model;
   "lib/svix": typeof lib_svix;
   negotiation: typeof negotiation;
+  providers: typeof providers;
   rooms: typeof rooms;
   rounds: typeof rounds;
   seed: typeof seed;
