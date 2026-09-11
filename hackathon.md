@@ -3,16 +3,16 @@
 - **Project:** convex-all-gas
 - **Event:** Convex All Gas Hackathon
 - **What it does:** Two agents with their own inboxes negotiate by email on behalf of two people, each holding one side's private limits, so a deal is found without either side revealing their number.
-- **Live app:** not deployed
+- **Live app:** https://expert-wolverine-992.convex.site
 - **Repo:** private
 - **Frontend:** Convex static hosting
-- **Convex deployment:** not deployed
+- **Convex deployment:** https://expert-wolverine-992.convex.cloud
 - **Components:** @convex-dev/static-hosting
-- **Convex features:** schema, tables, indexes, queries, mutations, actions, HTTP actions, Convex Auth
+- **Convex features:** schema, tables, indexes, queries, mutations, actions, HTTP actions, scheduled functions, Convex Auth, components
 - **Auth:** Convex Auth
 - **AI models:** gemini-3.5-flash (development; provider is switchable by env var)
 - **Started:** 2026-09-09T17:31:07Z
-- **Last updated:** 2026-09-11T03:32:25Z
+- **Last updated:** 2026-09-11T03:33:26Z
 
 ## Log
 
