@@ -1,5 +1,6 @@
 {
   "name": "overlap",
+  "description": "Two agents with their own inboxes negotiate by email on behalf of two people, each holding one side's private limits, so a deal is found without either side revealing their number.",
   "private": true,
   "version": "0.0.0",
   "type": "module",
