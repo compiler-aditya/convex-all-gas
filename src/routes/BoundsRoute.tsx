@@ -5,6 +5,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { api } from '../../convex/_generated/api'
 import type { Id } from '../../convex/_generated/dataModel'
 import { requireTemplate } from '../../convex/templates'
+import { formatFigure } from '@/components/negotiation/model'
 import type { Dimension } from '../../convex/templates/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -145,98 +146,139 @@ export function BoundsRoute() {
     )
   }
 
+  const filled = template.dimensions.filter(
+    (d) => draftFor(d.key).limit.trim() !== '',
+  ).length
+
   return (
     <PageShell
       eyebrow={room.title}
       title="Your position"
-      intro={`You are the ${mySide === 'a' ? template.sideALabel : template.sideBLabel}. Leave a term blank if you have no view on it.`}
+      intro={`You are the ${mySide === 'a' ? template.sideALabel : template.sideBLabel}. Set a limit on what you care about and leave the rest blank — most people only have a firm view on one or two.`}
     >
       <form onSubmit={handleSubmit}>
-        <div className="rounded-md border border-private-border bg-private-bg p-5">
-          <p className="flex items-start gap-2 text-sm text-private">
-            <LockKeyhole className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            <span>
-              <strong className="font-semibold">Only you will ever see this.</strong>{' '}
-              Your agent uses it; it is never sent to the other side.
-            </span>
-          </p>
+        <div className="overflow-hidden rounded-md border border-private-border bg-private-bg">
+          <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-private-border px-5 py-3">
+            <p className="flex items-center gap-2 text-sm text-private">
+              <LockKeyhole className="size-4 shrink-0" aria-hidden="true" />
+              <span>
+                <strong className="font-semibold">Only you will ever see this.</strong>{' '}
+                Never sent to the other side.
+              </span>
+            </p>
+            <p className="font-mono text-xs text-muted-foreground tabular-nums">
+              {filled} of {template.dimensions.length} set
+            </p>
+          </div>
 
-          <div className="mt-5 grid gap-6">
+          <div className="divide-y divide-private-border">
             {template.dimensions.map((dimension) => {
               const draft = draftFor(dimension.key)
               const minimum = isMinimum(dimension)
               const inputId = `limit-${dimension.key}`
+              const hasValue = draft.limit.trim() !== ''
 
               return (
-                <div key={dimension.key} className="grid gap-2 border-t border-private-border pt-5 first:border-t-0 first:pt-0">
-                  <div className="flex items-baseline justify-between gap-4">
-                    <label htmlFor={inputId} className="text-sm font-medium text-foreground">
-                      {dimension.label}
-                    </label>
-                    <span className="text-xs text-muted-foreground">
-                      {minimum ? 'never below' : 'never above'}
-                    </span>
-                  </div>
-                  {dimension.help !== undefined && (
-                    <p className="text-xs text-muted-foreground">{dimension.help}</p>
-                  )}
+                <div
+                  key={dimension.key}
+                  /* Terms you have no view on recede rather than competing for
+                     attention with the one or two you actually care about. */
+                  className={`px-5 py-4 transition-opacity ${hasValue ? '' : 'opacity-70'}`}
+                >
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <div className="min-w-[9rem] flex-1">
+                      <label htmlFor={inputId} className="text-sm font-medium text-foreground">
+                        {dimension.label}
+                      </label>
+                      {dimension.help !== undefined && (
+                        <p className="mt-0.5 text-xs text-muted-foreground">{dimension.help}</p>
+                      )}
+                    </div>
 
-                  <div className="flex items-center gap-2">
-                    {dimension.unit === '₹' && (
-                      <span className="font-mono text-sm text-muted-foreground">₹</span>
-                    )}
-                    <Input
-                      id={inputId}
-                      inputMode="numeric"
-                      value={draft.limit}
-                      onChange={(event) => update(dimension.key, { limit: event.target.value })}
-                      placeholder={minimum ? 'your minimum' : 'your maximum'}
-                      className="max-w-[180px] text-right font-mono tabular-nums"
-                    />
-                    {dimension.unit !== undefined && dimension.unit !== '₹' && (
-                      <span className="text-sm text-muted-foreground">{dimension.unit}</span>
-                    )}
-                  </div>
-
-                  <div className="mt-1 grid gap-1.5">
-                    <span className="text-xs text-muted-foreground">
-                      How much does this matter?
-                    </span>
-                    {/* Five discrete steps rather than a slider: a priority is a
-                        judgement, not a continuous measurement. */}
-                    <div role="radiogroup" aria-label={`Priority for ${dimension.label}`} className="flex gap-1">
-                      {PRIORITIES.map((priority) => (
-                        <button
-                          key={priority.weight}
-                          type="button"
-                          role="radio"
-                          aria-checked={draft.weight === priority.weight}
-                          onClick={() => update(dimension.key, { weight: priority.weight })}
-                          className={`flex-1 rounded-sm border px-2 py-1.5 text-xs transition-colors ${
-                            draft.weight === priority.weight
-                              ? 'border-private bg-private text-background'
-                              : 'border-private-border text-muted-foreground hover:text-foreground'
-                          }`}
-                        >
-                          {priority.label}
-                        </button>
-                      ))}
+                    <div className="flex items-center gap-2">
+                      <span className="w-20 shrink-0 text-right text-xs text-muted-foreground">
+                        {minimum ? 'never below' : 'never above'}
+                      </span>
+                      {/* Always rendered, so every input lines up in one column
+                          whether or not its term carries a currency symbol. */}
+                      <span
+                        aria-hidden="true"
+                        className="w-2 font-mono text-sm text-muted-foreground"
+                      >
+                        {dimension.unit === '₹' ? '₹' : ''}
+                      </span>
+                      <Input
+                        id={inputId}
+                        inputMode="numeric"
+                        value={draft.limit}
+                        onChange={(event) => update(dimension.key, { limit: event.target.value })}
+                        /* Grouped on blur rather than per keystroke: the same
+                           ₹1,45,000 the rest of the app shows, without the
+                           caret fighting the formatter mid-number. */
+                        onBlur={() => {
+                          if (dimension.type !== 'money') return
+                          const value = Number(draft.limit.replace(/[,\s]/g, ''))
+                          if (draft.limit.trim() === '' || !Number.isFinite(value)) return
+                          update(dimension.key, { limit: formatFigure(value) })
+                        }}
+                        placeholder="—"
+                        className="w-28 text-right font-mono tabular-nums"
+                      />
+                      <span className="w-14 text-xs text-muted-foreground">
+                        {dimension.unit !== undefined && dimension.unit !== '₹' ? dimension.unit : ''}
+                      </span>
                     </div>
                   </div>
 
-                  <label className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                    <input
-                      type="checkbox"
-                      checked={draft.isHard}
-                      onChange={(event) => update(dimension.key, { isHard: event.target.checked })}
-                    />
-                    This one cannot move
-                  </label>
+                  {/* Priority and the fixed toggle only matter once a limit
+                      exists, so they stay out of the way until then. */}
+                  {hasValue && (
+                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 pl-0 sm:pl-[9rem]">
+                      <div
+                        role="radiogroup"
+                        aria-label={`How much ${dimension.label} matters`}
+                        className="flex overflow-hidden rounded-sm border border-private-border"
+                      >
+                        {PRIORITIES.map((priority) => (
+                          <button
+                            key={priority.weight}
+                            type="button"
+                            role="radio"
+                            aria-checked={draft.weight === priority.weight}
+                            onClick={() => update(dimension.key, { weight: priority.weight })}
+                            className={`px-2.5 py-1 text-[11px] transition-colors ${
+                              draft.weight === priority.weight
+                                ? 'bg-private/15 font-medium text-private'
+                                : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            {priority.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <input
+                          type="checkbox"
+                          checked={draft.isHard}
+                          onChange={(event) =>
+                            update(dimension.key, { isHard: event.target.checked })
+                          }
+                        />
+                        cannot move
+                      </label>
+                    </div>
+                  )}
                 </div>
               )
             })}
           </div>
         </div>
+
+        <p className="mt-3 text-xs text-muted-foreground">
+          Priority tells your agent where to concede first. It gives ground on
+          what matters least to win what matters most.
+        </p>
 
         {error !== null && (
           <p role="alert" className="mt-4 text-sm text-no-deal">
@@ -245,11 +287,13 @@ export function BoundsRoute() {
         )}
 
         <div className="mt-6 flex items-center gap-3">
-          <Button type="submit" disabled={submitting}>
+          <Button type="submit" disabled={submitting || filled === 0}>
             {submitting ? 'Saving…' : 'Lock in my position'}
           </Button>
           <p className="text-xs text-muted-foreground">
-            You cannot change these once the negotiation starts.
+            {filled === 0
+              ? 'Set at least one limit to continue.'
+              : 'You cannot change these once the negotiation starts.'}
           </p>
         </div>
       </form>
