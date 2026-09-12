@@ -4,7 +4,7 @@
 - **Event:** Convex All Gas Hackathon
 - **What it does:** Two agents with their own inboxes negotiate by email on behalf of two people, each holding one side's private limits, so a deal is found without either side revealing their number.
 - **Live app:** https://expert-wolverine-992.convex.site
-- **Repo:** private
+- **Repo:** https://github.com/compiler-aditya/convex-all-gas
 - **Frontend:** Convex static hosting
 - **Convex deployment:** https://expert-wolverine-992.convex.cloud
 - **Components:** @convex-dev/static-hosting
@@ -12,7 +12,7 @@
 - **Auth:** Convex Auth
 - **AI models:** gemini-3.5-flash (development; provider is switchable by env var)
 - **Started:** 2026-09-09T17:31:07Z
-- **Last updated:** 2026-09-11T03:33:26Z
+- **Last updated:** 2026-09-12T15:44:03Z
 
 ## Log
 
@@ -322,7 +322,7 @@ Sign-in now offers Google alongside a password. Password is kept deliberately â€
 the test suite authenticates with it, and local development should not require
 external credentials to exist (`convex/auth.ts`).
 
-### 2026-09-11 - working tree
+### 2026-09-11 - eab53d7
 Deployed to production and finished provisioning it. The site serves the current
 build, every route resolves, the authentication discovery documents return real
 JSON, and the signed webhook endpoint answers at its own address. Production has
@@ -339,3 +339,18 @@ placeholder credentials made it appear, removing them made it vanish.
 
 Password sign-in stays the path that always works, since it depends on no
 external account.
+
+### 2026-09-12 - working tree
+Prepared the repository for submission. It is public now, with a description and
+the live address attached to it. The build log records the live application, the
+Convex deployment and the repository, all of which had been recorded as absent
+or private while they were still true.
+
+The README had remained the framework's starter template, so anyone opening the
+repository met a page about bundler plugins rather than the project. It now
+opens with the problem, the worked example, what each sponsored tool actually
+does, and the guarantees with the mechanism that enforces each one.
+
+Before publishing, every commit in the history was scanned for credentials, key
+files and real inbox addresses. None were present. Nothing has ever been
+committed that could not be read by a stranger.
