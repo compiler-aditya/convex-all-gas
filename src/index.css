@@ -494,6 +494,7 @@ html:has(.landing-page) { scroll-behavior: smooth; scroll-padding-top: 100px; }
 @media (min-width: 600px) {
   .landing-container { padding-inline: 32px; }
   .landing-header-cta { display: block; }
+  .landing-account { display: flex; }
   .landing-hero-copy { max-width: 650px; }
   .landing-hero-actions { gap: 28px; }
   .landing-principle-list { align-items: center; justify-content: space-between; flex-direction: row; gap: 16px; }
@@ -576,3 +577,11 @@ html:has(.landing-page) { scroll-behavior: smooth; scroll-padding-top: 100px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* Signed-in header cluster. The identity line says who, not merely that
+   someone is signed in; it is the first thing a returning person looks for. */
+.landing-account { align-items: center; gap: 14px; }
+.landing-account-identity { display: flex; align-items: center; gap: 10px; color: var(--muted-foreground); font-size: 13px; }
+.landing-account-identity > button { border: 0; background: none; padding: 0; color: var(--muted-foreground); font: inherit; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; transition: color 150ms; }
+.landing-account-identity > button:hover { color: var(--foreground); }
+.landing-mobile-signout { display: flex; min-height: 52px; align-items: center; justify-content: space-between; border: 0; border-top: 1px solid var(--border); background: none; padding: 0; color: var(--foreground); font: inherit; font-size: 16px; text-align: left; cursor: pointer; }

@@ -64,11 +64,29 @@ function PreviewRoom() {
   )
 }
 
-const showDemo = new URLSearchParams(window.location.search).get('demo') === '1'
+const params = new URLSearchParams(window.location.search)
+const showDemo = params.get('demo') === '1'
+/* The landing header changes shape once someone is signed in, and that state
+   is unreachable from a harness with no session — so it is passed in, which is
+   why `account` is a prop rather than a hook inside the page. */
+const signedIn = params.get('account') === '1'
+
 document.title = showDemo
   ? 'Negotiation demo — Overlap'
   : 'Overlap — Different sides. Common ground.'
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>{showDemo ? <PreviewRoom /> : <LandingPage />}</StrictMode>,
+  <StrictMode>
+    {showDemo ? (
+      <PreviewRoom />
+    ) : (
+      <LandingPage
+        account={
+          signedIn
+            ? { email: 'maya@example.com', onSignOut: () => alert('sign out') }
+            : undefined
+        }
+      />
+    )}
+  </StrictMode>,
 )

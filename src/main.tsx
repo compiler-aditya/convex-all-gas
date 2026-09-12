@@ -6,7 +6,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import App from './App.tsx'
 import { AuthGate } from './routes/AuthGate'
 import { DemoRoute } from './routes/DemoRoute'
-import { LandingPage } from './components/landing/landing-page'
+import { LandingRoute } from './routes/LandingRoute'
 import { BoundsRoute } from './routes/BoundsRoute'
 import { CreateRoomRoute } from './routes/CreateRoomRoute'
 import { RoomRoute } from './routes/RoomRoute'
@@ -29,13 +29,13 @@ createRoot(document.getElementById('root')!).render(
         <Routes>
           {/* The room is reachable without an account: the counterparty is
               authenticated by the token on the link, not by a session. */}
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<LandingRoute />} />
           <Route path="/demo" element={<DemoRoute />} />
           <Route path="/rooms" element={<AuthGate><App /></AuthGate>} />
           <Route path="/rooms/new" element={<AuthGate><CreateRoomRoute /></AuthGate>} />
           <Route path="/room/:roomId/position" element={<BoundsRoute />} />
           <Route path="/room/:roomId" element={<RoomRoute />} />
-          <Route path="*" element={<LandingPage />} />
+          <Route path="*" element={<LandingRoute />} />
         </Routes>
       </BrowserRouter>
     </ConvexAuthProvider>

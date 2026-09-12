@@ -13,6 +13,19 @@ const navigation = [
   { href: '#questions', label: 'FAQs' },
 ] as const
 
+/**
+ * Who is signed in, if anyone.
+ *
+ * Passed in rather than read from a hook so this page still renders with no
+ * Convex provider at all — the fixtures harness and its test both mount it
+ * bare. Absent means signed out, which is the public case.
+ */
+export type Account = {
+  /** Shown so the header says *who* is signed in, not merely that someone is. */
+  email?: string
+  onSignOut: () => void
+}
+
 function Wordmark() {
   return <a className="wordmark" href="/" aria-label="Overlap home"><Blend className="brand-symbol" strokeWidth={1.8} aria-hidden="true" />overlap</a>
 }
@@ -21,7 +34,7 @@ function DemoLink({ size = 'lg', label = 'Explore the demo' }: { size?: 'default
   return <a href="/demo" className={buttonVariants({ size, className: 'rounded-full' })}>{label}<ArrowUpRight data-icon="inline-end" aria-hidden="true" /></a>
 }
 
-function LandingHeader({ appearance, setAppearance }: { appearance: Appearance; setAppearance: (value: Appearance) => void }) {
+function LandingHeader({ appearance, setAppearance, account }: { appearance: Appearance; setAppearance: (value: Appearance) => void; account?: Account }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLButtonElement>(null)
   const AppearanceIcon = appearance === 'system' ? Monitor : appearance === 'light' ? Sun : Moon
@@ -44,7 +57,19 @@ function LandingHeader({ appearance, setAppearance }: { appearance: Appearance; 
             <Button variant="ghost" size="icon" onClick={() => setAppearance(next)} aria-label={`Appearance: ${appearance}. Switch to ${next} mode`} title={`Appearance: ${appearance}. Switch to ${next}`}>
               <AppearanceIcon aria-hidden="true" />
             </Button>
-            <div className="landing-header-cta"><DemoLink size="default" /></div>
+            {account === undefined ? (
+              <div className="landing-header-cta"><DemoLink size="default" /></div>
+            ) : (
+              <div className="landing-header-cta landing-account">
+                <span className="landing-account-identity">
+                  {account.email ?? 'Signed in'}
+                  <button type="button" onClick={account.onSignOut}>Sign out</button>
+                </span>
+                <a href="/rooms" className={buttonVariants({ size: 'default', className: 'rounded-full' })}>
+                  Your negotiations<ArrowUpRight data-icon="inline-end" aria-hidden="true" />
+                </a>
+              </div>
+            )}
             <div className="landing-menu-toggle">
               <Button ref={menuRef} size="icon" variant="ghost" aria-label={menuOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={menuOpen} aria-controls="landing-mobile-navigation" onClick={() => setMenuOpen(!menuOpen)}>
                 {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
@@ -55,6 +80,14 @@ function LandingHeader({ appearance, setAppearance }: { appearance: Appearance; 
         <nav id="landing-mobile-navigation" className="landing-mobile-nav" aria-label="Mobile navigation" hidden={!menuOpen}>
           {navigation.map((link) => <a key={link.href} href={link.href} onClick={() => setMenuOpen(false)}>{link.label}<ArrowUpRight className="size-4" aria-hidden="true" /></a>)}
           <a href="/demo" onClick={() => setMenuOpen(false)}>Explore the demo<ArrowUpRight className="size-4" aria-hidden="true" /></a>
+          {account !== undefined && (
+            <>
+              <a href="/rooms" onClick={() => setMenuOpen(false)}>Your negotiations<ArrowUpRight className="size-4" aria-hidden="true" /></a>
+              <button type="button" className="landing-mobile-signout" onClick={() => { setMenuOpen(false); account.onSignOut() }}>
+                Sign out{account.email !== undefined ? ` (${account.email})` : ''}
+              </button>
+            </>
+          )}
         </nav>
       </div>
     </header>
@@ -288,12 +321,12 @@ function LandingFooter({ appearance, setAppearance }: { appearance: Appearance; 
   )
 }
 
-export function LandingPage() {
+export function LandingPage({ account }: { account?: Account } = {}) {
   const { appearance, setAppearance } = useAppearance()
   return (
     <div className="landing-page font-sans">
       <a className="skip-link" href="#landing-content">Skip to main content</a>
-      <LandingHeader appearance={appearance} setAppearance={setAppearance} />
+      <LandingHeader appearance={appearance} setAppearance={setAppearance} account={account} />
       <main id="landing-content" tabIndex={-1}>
         <LandingHero />
         <ProductPrinciples />

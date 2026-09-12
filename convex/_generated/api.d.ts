@@ -31,6 +31,7 @@ import type * as rounds from "../rounds.js";
 import type * as seed from "../seed.js";
 import type * as templates_index from "../templates/index.js";
 import type * as templates_types from "../templates/types.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -62,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   seed: typeof seed;
   "templates/index": typeof templates_index;
   "templates/types": typeof templates_types;
+  users: typeof users;
 }>;
 
 /**
