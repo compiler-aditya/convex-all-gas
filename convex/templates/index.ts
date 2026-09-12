@@ -24,6 +24,8 @@ const freelance: Template = {
       higherFavors: "a",
       unit: "₹",
       help: "The whole project fee, not an hourly rate.",
+      askMin: "What is the least you would take?",
+      askMax: "What is the most you would pay?",
     },
     {
       key: "deliveryDays",
@@ -32,6 +34,8 @@ const freelance: Template = {
       higherFavors: "a",
       unit: "days",
       help: "Calendar days from start to final delivery.",
+      askMin: "What is the least time you need?",
+      askMax: "What is the longest you would wait?",
     },
     {
       key: "scopeUnits",
@@ -40,6 +44,8 @@ const freelance: Template = {
       higherFavors: "b",
       unit: "screens",
       help: "How much gets built. Dropping scope is often what unblocks a deal.",
+      askMin: "What is the least you would accept?",
+      askMax: "What is the most you would build?",
     },
     {
       key: "revisions",
@@ -48,6 +54,8 @@ const freelance: Template = {
       higherFavors: "b",
       unit: "rounds",
       help: "Included rounds of changes after delivery.",
+      askMin: "What is the fewest rounds you would accept?",
+      askMax: "What is the most rounds you would include?",
     },
     {
       key: "upfrontPercent",
@@ -56,6 +64,8 @@ const freelance: Template = {
       higherFavors: "a",
       unit: "%",
       help: "Share of the fee paid before work starts.",
+      askMin: "What is the least you would take upfront?",
+      askMax: "What is the most you would pay upfront?",
     },
   ],
 };

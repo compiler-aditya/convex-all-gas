@@ -25,6 +25,21 @@ export type Dimension = {
   options?: string[];
   /** Shown next to the bounds input so people know what they are committing to. */
   help?: string;
+  /**
+   * How to ask for the limit, in words.
+   *
+   * Which one is used depends on the asker's side, not on the dimension: the
+   * side that `higherFavors` is protected by a floor and hears `askMin`, the
+   * other side is protected by a ceiling and hears `askMax`. Asking "what is
+   * the least you would take?" beats labelling a box "never below" — the
+   * sentence says what the number will do, and a person can answer it without
+   * first decoding the direction.
+   *
+   * Optional; a generic phrasing is derived from the label when absent, so a
+   * new template works without writing copy for every dimension.
+   */
+  askMin?: string;
+  askMax?: string;
 };
 
 export type Template = {

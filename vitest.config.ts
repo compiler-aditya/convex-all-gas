@@ -9,6 +9,6 @@ export default defineConfig({
     // convex-test runs functions in a Convex-like isolate, not Node.
     environment: "edge-runtime",
     server: { deps: { inline: ["convex-test"] } },
-    include: ["convex/**/*.test.ts", "src/components/negotiation/**/*.test.ts", "src/components/landing/**/*.test.tsx"],
+    include: ["convex/**/*.test.ts", "src/components/negotiation/**/*.test.ts", "src/components/landing/**/*.test.tsx", "src/routes/**/*.test.ts"],
   },
 });
