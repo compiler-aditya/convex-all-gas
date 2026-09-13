@@ -143,5 +143,4 @@ Every screen renders in light and dark, following the system setting.
 
 ## Licence
 
-Not yet chosen. Until a `LICENSE` file is added, default copyright applies and
-the code is not licensed for reuse.
+MIT — see [`LICENSE`](LICENSE).
