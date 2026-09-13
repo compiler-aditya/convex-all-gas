@@ -10,9 +10,9 @@
 - **Components:** @convex-dev/static-hosting
 - **Convex features:** schema, tables, indexes, queries, mutations, actions, HTTP actions, scheduled functions, Convex Auth, components
 - **Auth:** Convex Auth
-- **AI models:** gemini-3.5-flash (development; provider is switchable by env var)
+- **AI models:** gemini-3.5-flash in production; provider resolved from environment (OpenAI, Gemini, or the Convex AI Gateway)
 - **Started:** 2026-09-09T17:31:07Z
-- **Last updated:** 2026-09-12T15:44:03Z
+- **Last updated:** 2026-09-13T00:02:43Z
 
 ## Log
 
@@ -354,3 +354,71 @@ does, and the guarantees with the mechanism that enforces each one.
 Before publishing, every commit in the history was scanned for credentials, key
 files and real inbox addresses. None were present. Nothing has ever been
 committed that could not be read by a stranger.
+
+### 2026-09-13 - cea252a, ef09dd6, 96c07c6, ac96158
+Four screens brought up to the standard the room already held, then deployed.
+
+The private position screen was a settings page: five identical blocks, the fee
+weighted the same as the revision count, "How much does this matter?" asked five
+times, and a "never below" tag that has to be decoded before the field can be
+answered. It now asks one term at a time, and the question carries the direction
+— "What is the most you would pay?" — with the consequence stated underneath in
+words. Phrasing lives on the dimension as `askMin`/`askMax`, so it belongs to the
+template rather than the screen, with a generic question derived from the label
+when a template has not written copy yet (`convex/templates/types.ts`). Priority
+is asked once, where it applies, and only after a limit exists, because it means
+nothing without one. Any term may be skipped, and a skipped term says so on a
+review step that shows the whole position before anything is saved.
+
+Money is grouped on blur through the same formatter the rest of the app uses, so
+a floor reads ₹1,45,000 where it is typed as well as where it is shown. Grouping
+per keystroke would fight the caret mid-number. Submission still parses to a
+number, confirmed by reading the stored bound back as 145000.
+
+The create screen was raw browser controls — system-blue radios against a sage
+palette, and three greyed "— soon" lines floating outside any container, which
+read as a rendering fault rather than a roadmap. Template and side are selection
+cards now; the native radio still does the work and takes the focus ring through
+`has-[:focus-visible]`, so replacing it visually costs no keyboard access. Form
+fields had been sitting on the page background, the same off-white as the page
+itself, so every field read as an outline rather than an input; they sit on the
+card colour now, which fixes sign-in and the invite field at the same time.
+
+The landing header looked identical whether or not you had an account, so a
+returning person had no route back to their own negotiations and no confirmation
+their session had survived. It now shows the account's email, a sign-out control
+and a link to their negotiations. The session is resolved in a route wrapper and
+handed down as a plain prop, because the landing page must keep rendering with
+no Convex provider at all — the fixtures harness and its own test both mount it
+bare (`src/routes/LandingRoute.tsx`). A new viewer query resolves the caller from
+the session and takes no user id, so it can only ever return the caller's own
+record — the rule the room queries already follow (`convex/users.ts`).
+
+Two faults were caught by looking rather than by building. A CSS rule setting
+`display: flex` at the base overrode the mobile `display: none` at equal
+specificity, so the signed-in header rendered on a 375px viewport and pushed the
+menu button off screen; display is now set only at the desktop breakpoint. And
+the question copy has a fallback path no shipped template exercises, which is
+what every future template will take before anyone writes copy for it — it is
+now covered, and the direction test was confirmed by swapping `askMin` and
+`askMax` and watching that test, and only that test, fail.
+
+Verification for all four ran in both palettes and at 375px. Reaching the create
+screen meant getting past the authentication gate, which was done by unwrapping
+the route for the length of a screenshot rather than by creating an account; the
+gate was restored and confirmed restored in the running application, not merely
+in the file.
+
+Production was deployed three times over the course of this and verified from
+outside each time: the live `index.html` references the hashes this build
+produced, the new copy is present in the served bundles and the replaced copy
+returns zero matches, and the sign-in page no longer offers a Google button the
+deployment cannot complete. A deploy key had also been set on the production
+deployment's own environment, where nothing reads it and it served only to give
+every server function a credential that could redeploy the deployment; it was
+removed.
+
+The webhook signing secret is now set in production, and the endpoint moved from
+answering 500 "not configured" to 400 "invalid signature" — it reads the secret
+and rejects unsigned payloads. That proves a secret is present, not that it is
+the right one for that endpoint; a mismatch fails identically. Tests: 66.

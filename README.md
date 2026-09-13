@@ -52,7 +52,7 @@ else.
 | **Convex** | Database, server functions, scheduling, HTTP actions, auth, realtime subscriptions, and static hosting. The whole backend. |
 | **AgentMail** | Real inboxes for the agents. Offers are genuine email with signed webhooks; delivery is what advances a round. |
 | **Firecrawl** | Scrapes the context page into structured terms and searches market comparables, so every proposal cites something checkable. |
-| **OpenAI / Gemini** | Generates proposals and their reasoning. Provider is switchable by environment variable. |
+| **OpenAI / Gemini** | Generates proposals and their reasoning. The provider is resolved from environment at runtime: `OPENAI_API_KEY` selects OpenAI, `GEMINI_API_KEY` selects Gemini's OpenAI-compatible endpoint, otherwise it falls back to the Convex AI Gateway. The deployed build runs Gemini Flash. |
 
 ## The design idea
 
@@ -63,6 +63,16 @@ shared and on the record**, **how far apart are we**.
 Per-dimension tracks show your own limit and both sides' offers — and never the
 counterparty's limit, or any value it could be inferred from. There is no query
 anywhere that returns the other side's bounds.
+
+The screen where you enter a limit is the one that has to earn it, since it asks
+for the number you have refused to say out loud. It asks one term at a time, and
+the question carries the direction — *"What is the most you would pay?"* rather
+than a field tagged `never above` — with the consequence stated underneath:
+*your agent will never agree to more than this.* The phrasing belongs to the
+dimension, not the screen, so a new template gets sensible questions the moment
+its terms are defined. Priority is asked once, and only after a limit exists,
+because it means nothing without one. Any term may be skipped: blank is a real
+answer meaning "no opinion", never zero.
 
 Full interface specification: [`DESIGN_BRIEF.md`](DESIGN_BRIEF.md).
 Build log: [`hackathon.md`](hackathon.md).
@@ -103,7 +113,7 @@ and falls back to password otherwise. Email sending can be pointed at a mock
 with `EMAIL_TRANSPORT=mock`, which keeps tests off a limited daily quota.
 
 ```bash
-npm test                # 63 tests
+npm test                # 66 tests
 npm run build
 npm run deploy          # production
 ```
@@ -116,16 +126,20 @@ npm run deploy          # production
 ```
 convex/
   schema.ts        11 tables, plus Convex Auth's
+  templates/       the dimension model — terms, direction, question copy
   engine/          scoring, overlap detection, proposal generation
   rounds.ts        the public API the interface binds to
   email.ts         inbox pool, sending, routing
   grounding.ts     Firecrawl scrape + comparables
+  users.ts         the caller's own record, resolved from session
   lib/access.ts    caller resolution — the security core
 src/
   components/landing/      the public page
   components/negotiation/  the room
-  routes/                  create, bounds, room, demo
+  routes/                  landing, create, position, room, demo
 ```
+
+Every screen renders in light and dark, following the system setting.
 
 ## Licence
 
