@@ -8,11 +8,11 @@
 - **Frontend:** Convex static hosting
 - **Convex deployment:** https://expert-wolverine-992.convex.cloud
 - **Components:** @convex-dev/static-hosting
-- **Convex features:** schema, tables, indexes, queries, mutations, actions, HTTP actions, scheduled functions, Convex Auth, components
+- **Convex features:** schema, tables, indexes, queries, mutations, actions, HTTP actions, scheduled functions, realtime queries, Convex Auth, components
 - **Auth:** Convex Auth
 - **AI models:** gemini-3.5-flash in production; provider resolved from environment (OpenAI, Gemini, or the Convex AI Gateway)
 - **Started:** 2026-09-09T17:31:07Z
-- **Last updated:** 2026-09-13T00:02:43Z
+- **Last updated:** 2026-09-13T05:39:22Z
 
 ## Log
 
@@ -145,7 +145,7 @@ AI Gateway, chosen at call time by which credential exists (`convex/lib/model.ts
 The gateway needs a paid Convex plan, so the deployment is not held hostage to
 one billing decision. No model call has run yet, so no model is claimed.
 
-### 2026-09-10 - working tree
+### 2026-09-10 - 5d60428
 The negotiation engine runs end to end, with no email involved
 (`convex/engine/propose.ts`, `convex/negotiation.ts`). Sides alternate. Each
 round the server first decides, from the bounds alone, whether the standing
@@ -177,7 +177,7 @@ fragment rather than an error; reasoning effort is now set explicitly for
 structured replies. Convex features: schema, tables, indexes, queries,
 mutations, actions, HTTP actions, Convex Auth.
 
-### 2026-09-10 - working tree
+### 2026-09-10 - 1398f31
 The negotiation now runs over real email, agent to agent
 (`convex/email.ts`, `convex/http.ts`). Each side is assigned an inbox from the
 shared pool, a completed round is rendered as a message and sent, and the
@@ -202,7 +202,7 @@ than sending. Transport is switchable, with a mock that records what would have
 been sent so tests do not consume a limited daily send quota; live remains the
 default so a demonstration cannot quietly run on the mock.
 
-### 2026-09-10 - working tree
+### 2026-09-10 - 7881e57
 Wrote the interface specification and completed the public API it binds to.
 
 The brief treats the information asymmetry as the architecture rather than a
@@ -226,7 +226,7 @@ until both are set. Starting a negotiation refuses politely when a side has not
 set a position rather than throwing, so the interface can render the reason
 instead of an error.
 
-### 2026-09-10 - working tree
+### 2026-09-10 - 31290a9
 The interface now runs on live data. The room components were decoupled from
 their fixtures behind a small context, so the same components render against
 mock data in a design preview and against Convex in the application
@@ -254,7 +254,7 @@ counterparty's name was hardcoded in five places. And the application entry
 point had been replaced by a fixtures-only harness, so the product booted into
 mock data.
 
-### 2026-09-10 - working tree
+### 2026-09-10 - ae99c51
 A negotiation can now be started from the interface rather than the command
 line (`src/routes/CreateRoomRoute.tsx`, `src/routes/BoundsRoute.tsx`). Creating
 a room asks what the negotiation is about and which side you are; limits are a
@@ -277,7 +277,7 @@ shows your own view, because the caller is resolved from the session before the
 link token is considered. That is correct, and it means a demonstration needs
 two separate browser sessions rather than two tabs.
 
-### 2026-09-10 - working tree
+### 2026-09-10 - b7b9758
 A landing page and a sign-in screen in the product's own visual language
 (`src/routes/LandingRoute.tsx`, `src/components/SignIn.tsx`). The landing page
 states the mechanism rather than selling it: the worked example carries the
@@ -297,7 +297,7 @@ path; the heading, the term comparison and three dimension tracks all appeared
 without a reload. The two paths write identical rounds, so the live view behaves
 the same whichever drives it.
 
-### 2026-09-10 - working tree
+### 2026-09-10 - 06a9788
 Adopted a designed landing page and added Google sign-in.
 
 The landing page replaces the one written earlier. Its hero is the product's
@@ -340,7 +340,7 @@ placeholder credentials made it appear, removing them made it vanish.
 Password sign-in stays the path that always works, since it depends on no
 external account.
 
-### 2026-09-12 - working tree
+### 2026-09-12 - ed4caca
 Prepared the repository for submission. It is public now, with a description and
 the live address attached to it. The build log records the live application, the
 Convex deployment and the repository, all of which had been recorded as absent
@@ -355,70 +355,33 @@ Before publishing, every commit in the history was scanned for credentials, key
 files and real inbox addresses. None were present. Nothing has ever been
 committed that could not be read by a stranger.
 
-### 2026-09-13 - cea252a, ef09dd6, 96c07c6, ac96158
-Four screens brought up to the standard the room already held, then deployed.
+### 2026-09-13 - c666f55
+Brought four screens up to the standard the room already held, then deployed.
+The private position screen now asks one term at a time, with the question
+carrying the direction — "What is the most you would pay?" — and the consequence
+underneath in words. Phrasing lives on the dimension as `askMin`/`askMax`, so it
+belongs to the template rather than the screen (`convex/templates/types.ts`,
+`src/routes/BoundsRoute.tsx`). The create screen replaced browser-default radios
+with selection cards that keep the native control and its focus ring. The
+landing header now shows who is signed in, resolved by a caller-scoped viewer
+query that takes no user id (`convex/users.ts`, `src/routes/LandingRoute.tsx`).
 
-The private position screen was a settings page: five identical blocks, the fee
-weighted the same as the revision count, "How much does this matter?" asked five
-times, and a "never below" tag that has to be decoded before the field can be
-answered. It now asks one term at a time, and the question carries the direction
-— "What is the most you would pay?" — with the consequence stated underneath in
-words. Phrasing lives on the dimension as `askMin`/`askMax`, so it belongs to the
-template rather than the screen, with a generic question derived from the label
-when a template has not written copy yet (`convex/templates/types.ts`). Priority
-is asked once, where it applies, and only after a limit exists, because it means
-nothing without one. Any term may be skipped, and a skipped term says so on a
-review step that shows the whole position before anything is saved.
+Two faults were caught by looking rather than by building: a CSS rule set
+`display` at the base and overrode the mobile `display: none` at equal
+specificity, so the signed-in header pushed the menu button off a 375px screen;
+and the question copy had a fallback path no shipped template exercises, now
+covered and confirmed by swapping `askMin` and `askMax` to watch that test, and
+only that test, fail. Tests: 66.
 
-Money is grouped on blur through the same formatter the rest of the app uses, so
-a floor reads ₹1,45,000 where it is typed as well as where it is shown. Grouping
-per keystroke would fight the caret mid-number. Submission still parses to a
-number, confirmed by reading the stored bound back as 145000.
+Production was deployed three times and verified from outside each time — the
+served bundles carry the new copy and none of the replaced copy, and sign-in no
+longer offers a Google button the deployment cannot complete. A deploy key had
+been set on the production deployment's own environment, where nothing reads it
+and it served only to give every server function a credential that could
+redeploy the deployment; it was removed. The webhook signing secret is now set,
+and the endpoint answers 400 "invalid signature" rather than 500 "not
+configured" — it reads the secret and rejects unsigned payloads, which shows a
+secret is present, not that it is the right one for that endpoint.
 
-The create screen was raw browser controls — system-blue radios against a sage
-palette, and three greyed "— soon" lines floating outside any container, which
-read as a rendering fault rather than a roadmap. Template and side are selection
-cards now; the native radio still does the work and takes the focus ring through
-`has-[:focus-visible]`, so replacing it visually costs no keyboard access. Form
-fields had been sitting on the page background, the same off-white as the page
-itself, so every field read as an outline rather than an input; they sit on the
-card colour now, which fixes sign-in and the invite field at the same time.
-
-The landing header looked identical whether or not you had an account, so a
-returning person had no route back to their own negotiations and no confirmation
-their session had survived. It now shows the account's email, a sign-out control
-and a link to their negotiations. The session is resolved in a route wrapper and
-handed down as a plain prop, because the landing page must keep rendering with
-no Convex provider at all — the fixtures harness and its own test both mount it
-bare (`src/routes/LandingRoute.tsx`). A new viewer query resolves the caller from
-the session and takes no user id, so it can only ever return the caller's own
-record — the rule the room queries already follow (`convex/users.ts`).
-
-Two faults were caught by looking rather than by building. A CSS rule setting
-`display: flex` at the base overrode the mobile `display: none` at equal
-specificity, so the signed-in header rendered on a 375px viewport and pushed the
-menu button off screen; display is now set only at the desktop breakpoint. And
-the question copy has a fallback path no shipped template exercises, which is
-what every future template will take before anyone writes copy for it — it is
-now covered, and the direction test was confirmed by swapping `askMin` and
-`askMax` and watching that test, and only that test, fail.
-
-Verification for all four ran in both palettes and at 375px. Reaching the create
-screen meant getting past the authentication gate, which was done by unwrapping
-the route for the length of a screenshot rather than by creating an account; the
-gate was restored and confirmed restored in the running application, not merely
-in the file.
-
-Production was deployed three times over the course of this and verified from
-outside each time: the live `index.html` references the hashes this build
-produced, the new copy is present in the served bundles and the replaced copy
-returns zero matches, and the sign-in page no longer offers a Google button the
-deployment cannot complete. A deploy key had also been set on the production
-deployment's own environment, where nothing reads it and it served only to give
-every server function a credential that could redeploy the deployment; it was
-removed.
-
-The webhook signing secret is now set in production, and the endpoint moved from
-answering 500 "not configured" to 400 "invalid signature" — it reads the secret
-and rejects unsigned payloads. That proves a secret is present, not that it is
-the right one for that endpoint; a mismatch fails identically. Tests: 66.
+The project is MIT licensed (`LICENSE`), declared also in the package manifest
+and the README, which had said no licence was chosen.
